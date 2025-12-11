@@ -87,12 +87,12 @@ def show_fancy_menu():
     from rich.rule import Rule
 
     menu_items = [
-        ("1.", "➕", "[cyan]Create a new habit[/cyan]"),
-        ("2.", "❌", "[red]Delete a habit[/red]"),
-        ("3.", "✅", "[green]Check-off a habit (Complete task)[/green]"),
-        ("4.", "📝", "[yellow]Edit a habit[/yellow]"),
-        ("5.", "📋", "[blue]List all habits[/blue]"),
-        ("6.", "🔍", "[blue]List habits by periodicity[/blue]"),
+        ("1.", "➕", "[gold1]Create a new habit[/gold1]"),
+        ("2.", "❌", "[gold1]Delete a habit[/gold1]"),
+        ("3.", "✅", "[gold1]Check-off a habit (Complete task)[/gold1]"),
+        ("4.", "📝", "[gold1]Edit a habit[/gold1]"),
+        ("5.", "📋", "[gold1]List all habits[/gold1]"),
+        ("6.", "🔍", "[gold1]List habits by periodicity[/gold1]"),
         ("7.", "🏆", "[gold1]Show longest streak of all habits[/gold1]"),
         ("8.", "🎯", "[gold1]Show longest streak for a specific habit[/gold1]"),
         ("9.", "👋", "[red]Exit[/red]")
@@ -180,11 +180,13 @@ def delete_habit_interactive(db):
     while True:
         console.print("\n🗑️  [bold red]Delete a habit[/bold red]")
         habits = analytics.get_all_habits(db)
+
         if not habits:
             console.print("❌ No habits found to delete.", style="red")
             return
 
         console.print("\n[bold cyan]Current habits:[/bold cyan]")
+
         for i, habit in enumerate(habits, 1):
             periodicity_icon = "☀️" if habit[1] == "daily" else "🗓️"
             console.print(f"  {i}.  {periodicity_icon} [cyan]{habit[0]}[/cyan] ([yellow]{habit[1]}[/yellow])")
@@ -199,7 +201,6 @@ def delete_habit_interactive(db):
             if 1 <= choice_num <= len(habits):
                 selected_habit = habits[choice_num - 1]
                 name = selected_habit[0]
-
                 h = Habit(name, selected_habit[1])
                 h.delete(db)
                 console.print(f"✅  Habit '[bold]{name}[/bold]' deleted successfully!", style="green")
@@ -207,40 +208,47 @@ def delete_habit_interactive(db):
             else:
                 console.print(f"❌ Invalid number. Please enter a number between 1 and {len(habits)}.", style="red")
                 console.print("[dim]Please try again.. .[/dim]\n")
+
         except ValueError:
             console.print("❌ Invalid input. Please enter a number.", style="red")
             console.print("[dim]Please try again...[/dim]\n")
 
 def checkoff_habit_interactive(db):
     """Interactive check-off habit"""
-    console.print("\n✅ [bold green]Check-off a habit[/bold green]")
-    habits = analytics.get_all_habits(db)
-    if not habits:
-        console.print("❌ No habits found to edit.", style="red")
-        return
+    while True:
+        console.print("\n✅ [bold green]Check-off a habit[/bold green]")
+        habits = analytics.get_all_habits(db)
 
-    console.print("\n[bold cyan]Current habits:[/bold cyan]")
-    for i, habit in enumerate(habits, 1):
-        periodicity_icon = "☀️" if habit[1] == "daily" else "📆"
-        console.print(f"  {i}. {periodicity_icon} [cyan]{habit[0]}[/cyan] ([yellow]{habit[1]}[/yellow])")
+        if not habits:
+            console.print("❌ No habits found to edit.", style="red")
+            return
 
-    name = console.input("\nEnter habit name to check-off: ")
+        console.print("\n[bold cyan]Current habits:[/bold cyan]")
 
-    # Check if habit exists in the database
-    habits = analytics.get_all_habits(db)
-    target_habit = next((h for h in habits if h[0] == name), None)
+        for i, habit in enumerate(habits, 1):
+            periodicity_icon = "☀️" if habit[1] == "daily" else "📆"
+            console.print(f"  {i}. {periodicity_icon} [cyan]{habit[0]}[/cyan] ([yellow]{habit[1]}[/yellow])")
 
-    if not target_habit:
-        console.print(f"❌ Habit '[bold]{name}[/bold]' not found.", style="red")
-        return
+        choice = console.input("\nEnter the number of the habit to check-off (or 'q' to quit): ")
 
-    # Use the correct periodicity from the database
-    h = Habit(name, target_habit[1])
-    h.check_off(datetime.now(), db)
+        if choice.lower() == 'q':
+            return
 
-    # Display the appropriate message based on periodicity
-    period_text = "today" if target_habit[1] == "daily" else "this week"
-    console.print(f"✅ Marked '[bold green]{name}[/bold green]' as done for {period_text}!", style="green")
+        try:
+            choice_num = int(choice)
+            if 1 <= choice_num <= len(habits):
+                selected_habit = habits[choice_num - 1]
+                name = selected_habit[0]
+                h = Habit(name, selected_habit[1])
+                h.check_off(datetime.now(), db)
+                console.print(f"✅  Habit '[bold green]{name}[/bold green]' marked as done!", style="green")
+                return
+            else:
+                console.print(f"❌ Invalid number. Please enter a number between 1 and {len(habits)}.", style="red")
+                console.print("[dim]Please try again.. .[/dim]\n")
+        except ValueError:
+            console.print("❌ Invalid input. Please enter a number.", style="red")
+            console.print("[dim]Please try again...[/dim]\n")
 
 def edit_habit_interactive(db):
     """Interactive edit habit"""
