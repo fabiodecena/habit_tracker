@@ -17,9 +17,9 @@ class TestHabitTracker(unittest.TestCase):
         # Use an in-memory DB for testing
         self.db = get_connection(":memory:")
         self.habit_daily = Habit("Test Daily", "daily")
-        self.habit_daily.store(self.db)
+        self.habit_daily.create(self.db)
         self.habit_weekly = Habit("Test Weekly", "weekly")
-        self.habit_weekly.store(self.db)
+        self.habit_weekly.create(self.db)
 
     def tearDown(self):
         self.db.close()

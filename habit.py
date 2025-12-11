@@ -17,7 +17,7 @@ class Habit:
         self.periodicity = periodicity
         self.created_at = datetime.now().isoformat()
 
-    def store(self, db=None):
+    def create(self, db=None):
         """
         Saves the habit definition to the database.
         """
@@ -26,6 +26,34 @@ class Habit:
         try:
             cur.execute("INSERT OR IGNORE INTO habits VALUES (?, ?, ?)",
                         (self.name, self.periodicity, self.created_at))
+            con.commit()
+        finally:
+            if not db:
+                con.close()
+
+    def update(self, new_name: str = None, new_periodicity: str = None, db = None):
+        """
+        Updates the habit's name and/or periodicity.
+        :param new_name: New name for the habit (optional)
+        :param new_periodicity: New periodicity for the habit (optional)
+        :param db:
+        """
+        con = db or get_connection()
+        cur = con.cursor()
+        try:
+            # Update name if provided
+            if new_name and new_name != self.name:
+                # Update in habit table
+                cur.execute("UPDATE habits SET name=? WHERE name=?", (new_name, self.name))
+                # Update in the tracker table to maintain referential integrity
+                cur.execute("UPDATE tracker SET habit_name=?  WHERE habit_name=?", (new_name, self.name))
+                self.name = new_name
+
+            # Update periodicity if provided
+            if new_periodicity and new_periodicity != self.periodicity:
+                cur.execute("UPDATE habits SET periodicity=? WHERE name=?", (new_periodicity, self.name))
+                self.periodicity = new_periodicity
+
             con.commit()
         finally:
             if not db:
