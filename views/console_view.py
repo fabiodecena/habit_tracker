@@ -72,6 +72,18 @@ class ConsoleView:
         """Gets a numbered choice from the user."""
         return self.console.input(prompt)
 
+    def get_confirmation(self, prompt: str) -> str:
+        """
+        Gets a confirmation from a user.
+
+        Args:
+            prompt: Prompt text to display
+
+        Returns:
+            User's input as string
+        """
+        return self.console.input(prompt)
+
     # ============ Success Messages ============
 
     def show_habit_created(self, name: str):
@@ -126,7 +138,7 @@ class ConsoleView:
 
     def show_error(self, message: str):
         """Shows an error message."""
-        self.console.print(f"❌ {message}", style="red")
+        self.console.print(f"\n❌ {message}", style="red")
 
     def show_invalid_periodicity(self):
         """Shows invalid periodicity error."""
@@ -146,7 +158,7 @@ class ConsoleView:
 
     def show_retry_message(self):
         """Shows retry message."""
-        self.console.print("[dim]Please try again.. .[/dim]\n")
+        self.console.print("\n[dim]Please try again.. .[/dim]\n")
 
     # ============ Info Display ============
 
@@ -157,7 +169,7 @@ class ConsoleView:
     def show_goodbye(self):
         """Shows goodbye message."""
         self.console.print(
-            "\n👋 [bold magenta]Goodbye!  Keep building those habits![/bold magenta] ✨",
+            "\n👋 [bold magenta]Goodbye!  Keep building those habits![/bold magenta] ✨\n",
             style="magenta"
         )
 
@@ -190,7 +202,7 @@ class ConsoleView:
             habits: List of tuples (name, periodicity)
             header: Header text
         """
-        self.console.print(f"\n{header}")
+        self.console.print(f"\n{header}\n")
 
         for i, habit in enumerate(habits, 1):
             icon = get_periodicity_icon(habit[1])
@@ -208,7 +220,7 @@ class ConsoleView:
             habits: List of tuples (name, periodicity)
         """
         self.console.print(
-            f"\n{periodicity.capitalize()} habits:",
+            f"\n{periodicity.capitalize()} habits:\n",
             style="bold cyan"
         )
 
@@ -229,9 +241,9 @@ class ConsoleView:
             habit_name: Name of the habit
             streak:  Streak length
         """
-        self.show_header("🏆 [bold gold1]Longest streak analysis[/bold gold1]")
+        self.show_header("\n🏆 [bold gold1]Longest streak analysis[/bold gold1]")
         self.console.print(
-            f"🏆 The champion is '[bold green]{habit_name}[/bold green]' "
+            f"\n🏆 The champion is '[bold green]{habit_name}[/bold green]' "
             f"with a streak of [bold yellow]{streak}[/bold yellow]! ",
             style="gold1"
         )
@@ -249,6 +261,33 @@ class ConsoleView:
             f"[bold yellow]{streak}[/bold yellow]",
             style="gold1"
         )
+
+    def show_periodicity_menu(self):
+        """
+        Displays the periodicity filter menu.
+        """
+        from rich.table import Table
+
+        table = Table(
+            show_header=False,
+            show_edge=False,
+            padding=(0, 1),
+            box=None
+        )
+        table.add_column("Number", style="bold yellow", width=3, no_wrap=True)
+        table.add_column("Icon", width=4, no_wrap=True)
+        table.add_column("Description", style="cyan")
+
+        menu_items = [
+            ("1.", "☀️", "Daily habits"),
+            ("2.", "📆", "Weekly habits"),
+        ]
+
+        for item in menu_items:
+            table.add_row(*item)
+
+        self.console.print("\n")
+        self.console.print(table)
 
     # ============ Edit Helpers ============
 

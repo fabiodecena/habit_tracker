@@ -36,63 +36,116 @@ class HabitController:
             self.view.show_error(message)
 
     def delete_habit(self):
-        """Interactive habit deletion."""
-        self.view.show_header("🗑️  [bold red]Delete a habit[/bold red]")
+        """Interactive habit deletion with numbered selection."""
+        while True:
+            self.view.show_header("🗑️  [bold red]Delete a habit[/bold red]")
 
-        habits = self.service.get_all_habits()
-        if not habits:
-            self.view.show_no_habits_found()
-            return
+            habits = self.service.get_all_habits()
+            if not habits:
+                self.view.show_no_habits_found()
+                return
 
-        # Convert to tuples for display
-        habit_tuples = [(h.name, h.periodicity) for h in habits]
-        self.view.show_habits_numbered_list(habit_tuples)
+            # Convert to tuples for display
+            habit_tuples = [(h.name, h.periodicity) for h in habits]
+            self.view.show_habits_numbered_list(habit_tuples)
 
-        name = self.view.get_habit_name("\nEnter the name of the habit to delete:  ")
+            choice = self.view.get_number_choice(
+                "\nEnter the number of the habit to delete (or 'q' to quit): "
+            )
 
-        success, message = self.service.delete_habit(name)
+            if choice.lower() == 'q':
+                return
 
-        if success:
-            self.view.show_habit_deleted(name)
-        else:
-            self.view.show_error(message)
+            try:
+                choice_num = int(choice)
+                if 1 <= choice_num <= len(habits):
+                    selected_habit = habits[choice_num - 1]
+                    name = selected_habit.name
+
+                    # Add confirmation to prevent accidental deletion
+                    confirm = self.view.get_confirmation(
+                        f"\n⚠️  Are you sure you want to delete '{name}'?  (y/n): "
+                    )
+
+                    if confirm.lower() != 'y':
+                        self.view.console.print("\n❌ Deletion cancelled.", style="yellow")
+                        return
+
+                    success, message = self.service.delete_habit(name)
+
+                    if success:
+                        self.view.show_habit_deleted(name)
+                    else:
+                        self.view.show_error(message)
+                    return
+                else:
+                    self.view.show_error(
+                        f"Invalid number. Please enter a number between 1 and {len(habits)}."
+                    )
+                    self.view.show_retry_message()
+            except ValueError:
+                self.view.show_error("Invalid input. Please enter a number.")
+                self.view.show_retry_message()
 
     def edit_habit(self):
-        """Interactive habit editing."""
-        self.view.show_header("✏️  [bold yellow]Edit a habit[/bold yellow]")
+        """Interactive habit editing with numbered selection."""
+        while True:
+            self.view.show_header("✏️  [bold yellow]Edit a habit[/bold yellow]")
 
-        habits = self.service.get_all_habits()
-        if not habits:
-            self.view.show_no_habits_found()
-            return
+            habits = self.service.get_all_habits()
+            if not habits:
+                self.view.show_no_habits_found()
+                return
 
-        habit_tuples = [(h.name, h.periodicity) for h in habits]
-        self.view.show_habits_numbered_list(habit_tuples)
+            # Convert to tuples for display
+            habit_tuples = [(h.name, h.periodicity) for h in habits]
+            self.view.show_habits_numbered_list(habit_tuples)
 
-        old_name = self.view.get_habit_name("\nEnter the name of the habit to edit: ")
+            choice = self.view.get_number_choice(
+                "\nEnter the number of the habit to edit (or 'q' to quit): "
+            )
 
-        target_habit = self.service.get_habit_by_name(old_name)
-        if not target_habit:
-            self.view.show_habit_not_found(old_name)
-            return
+            if choice.lower() == 'q':
+                return
 
-        self.view.show_current_habit_info(target_habit.name, target_habit.periodicity)
+            try:
+                choice_num = int(choice)
+                if 1 <= choice_num <= len(habits):
+                    selected_habit = habits[choice_num - 1]
 
-        new_name = self.view.get_new_name(old_name)
-        new_periodicity = self.view.get_new_periodicity(target_habit.periodicity)
+                    # Show current habit info
+                    self.view.show_current_habit_info(selected_habit.name, selected_habit.periodicity)
 
-        # Keep current values if the user pressed Enter
-        if not new_name:
-            new_name = old_name
-        if not new_periodicity:
-            new_periodicity = target_habit.periodicity
+                    # Get new values
+                    new_name = self.view.get_new_name(selected_habit.name)
+                    new_periodicity = self.view.get_new_periodicity(selected_habit.periodicity)
 
-        success, message = self.service.update_habit(old_name, new_name, new_periodicity)
+                    # Keep current values if the user pressed Enter
+                    if not new_name:
+                        new_name = selected_habit.name
+                    if not new_periodicity:
+                        new_periodicity = selected_habit.periodicity
 
-        if success:
-            self.view.show_habit_updated(old_name, new_name, new_periodicity)
-        else:
-            self.view.show_error(message)
+                    # Update habit
+                    success, message = self.service.update_habit(
+                        selected_habit.name,
+                        new_name,
+                        new_periodicity
+                    )
+
+                    if success:
+                        self.view.show_habit_updated(selected_habit.name, new_name, new_periodicity)
+                    else:
+                        self.view.show_error(message)
+                    return
+                else:
+                    self.view.show_error(
+                        f"Invalid number.  Please enter a number between 1 and {len(habits)}."
+                    )
+                    self.view.show_retry_message()
+            except ValueError:
+                self.view.show_error("Invalid input.  Please enter a number.")
+                self.view.show_retry_message()
 
     def list_all_habits(self):
         """Display all habits."""
@@ -101,10 +154,39 @@ class HabitController:
         self.view.show_habits_list(habit_tuples)
 
     def list_habits_by_periodicity(self):
-        """Display habits filtered by periodicity."""
-        self.view.show_header("🔍 [bold blue]Filter habits by periodicity[/bold blue]")
+        """Display habits filtered by periodicity with menu selection."""
+        while True:
+            self.view.show_header("🔍 [bold blue]Filter habits by periodicity[/bold blue]")
 
-        periodicity = self.view.get_periodicity("Which periodicity?   (daily/weekly): ")
-        habits = self.service.get_habits_by_periodicity(periodicity)
-        habit_tuples = [(h.name, h.periodicity) for h in habits]
-        self.view.show_filtered_habits(periodicity, habit_tuples)
+            # Show periodicity options
+            self.view.show_periodicity_menu()
+
+            choice = self.view.get_number_choice(
+                "\nEnter your choice (1-2, or 'q' to quit): "
+            )
+
+            if choice.lower() == 'q':
+                return
+
+            try:
+                choice_num = int(choice)
+                if choice_num == 1:
+                    periodicity = 'daily'
+                elif choice_num == 2:
+                    periodicity = 'weekly'
+                else:
+                    self.view.show_error(
+                        "Invalid choice. Please enter 1 for daily or 2 for weekly."
+                    )
+                    self.view.show_retry_message()
+                    continue
+
+                # Get and display filtered habits
+                habits = self.service.get_habits_by_periodicity(periodicity)
+                habit_tuples = [(h.name, h.periodicity) for h in habits]
+                self.view.show_filtered_habits(periodicity, habit_tuples)
+                return
+
+            except ValueError:
+                self.view.show_error("Invalid input. Please enter a number (1 or 2).")
+                self.view.show_retry_message()

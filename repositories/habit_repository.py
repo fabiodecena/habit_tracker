@@ -63,34 +63,48 @@ class HabitRepository:
     def find_all(self, include_inactive: bool = False) -> List[Habit]:
         """
         Returns all habits from the database.
+        Daily habits first, then weekly. Within each group, the newest first.
 
         Args:
             include_inactive: Whether to include inactive habits
 
         Returns:
-            List of Habit objects
+            List of Habit objects ordered by periodicity (daily first), then by creation date (newest first)
         """
         con = self.db or Database.get_connection()
         cur = con.cursor()
 
-        if include_inactive:
-            cur.execute("""
-                SELECT habit_id, name, periodicity, created_at, updated_at, comments, is_active
-                FROM habits
-                ORDER BY created_at DESC
-            """)
-        else:
-            cur.execute("""
-                SELECT habit_id, name, periodicity, created_at, updated_at, comments, is_active
-                FROM habits
-                WHERE is_active = 1
-                ORDER BY created_at DESC
-            """)
+        cur.execute("""
+            SELECT habit_id, name, periodicity, created_at, updated_at, comments, is_active
+            FROM habits
+        """)
 
         results = cur.fetchall()
         if not self.db:
             con.close()
-        return [Habit.from_tuple(row) for row in results]
+
+        # Functional approach: map, filter, sort
+        habits = map(Habit.from_tuple, results)
+
+        # Filter inactive habits if needed
+        if not include_inactive:
+            habits = filter(lambda h: h.is_active, habits)
+
+        # Define sorting key function (functional approach)
+        def get_sort_key(habit: Habit) -> tuple:
+            """
+            Returns tuple for sorting:
+            - First element: periodicity priority (daily=1, weekly=2, other=3)
+            - Second element: negative timestamp (for descending order)
+            """
+            periodicity_map = {'daily': 1, 'weekly': 2}
+            periodicity_priority = periodicity_map.get(habit.periodicity, 3)
+            creation_time = -habit.created_at.timestamp()  # Negative for descending
+
+            return periodicity_priority, creation_time
+
+        # Sort using a functional key
+        return sorted(habits, key=get_sort_key)
 
     def find_by_id(self, habit_id: str) -> Optional[Habit]:
         """

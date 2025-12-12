@@ -29,14 +29,43 @@ class AnalyticsController:
         self.view.show_longest_streak_all(habit_name, streak)
 
     def show_longest_streak_specific(self):
-        """Display streak for a specific habit."""
-        self.view.show_header("🎯 [bold gold1]Specific habit streak analysis[/bold gold1]")
+        """Display a streak for a specific habit with a numbered selection."""
+        while True:
+            self.view.show_header("🎯 [bold gold1]Specific habit streak analysis[/bold gold1]")
 
-        name = self.view.get_habit_name()
-        habit = self.habit_service.get_habit_by_name(name)
+            habits = self.habit_service.get_all_habits()
+            if not habits:
+                self.view.show_no_habits_found()
+                return
 
-        if habit:
-            streak = self.analytics_service.calculate_longest_streak(name)
-            self.view.show_longest_streak_specific(name, streak)
-        else:
-            self.view.show_habit_not_found(name)
+            # Convert to tuples for display
+            habit_tuples = [(h.name, h.periodicity) for h in habits]
+            self.view.show_habits_numbered_list(habit_tuples)
+
+            choice = self.view.get_number_choice(
+                "\nEnter the number of the habit to analyze (or 'q' to quit): "
+            )
+
+            if choice.lower() == 'q':
+                return
+
+            try:
+                choice_num = int(choice)
+                if 1 <= choice_num <= len(habits):
+                    selected_habit = habits[choice_num - 1]
+                    name = selected_habit.name
+
+                    streak = self.analytics_service.calculate_longest_streak(name)
+
+                    # Add a blank line before showing a result
+                    self.view.console.print()
+                    self.view.show_longest_streak_specific(name, streak)
+                    return
+                else:
+                    self.view.show_error(
+                        f"Invalid number. Please enter a number between 1 and {len(habits)}."
+                    )
+                    self.view.show_retry_message()
+            except ValueError:
+                self.view.show_error("Invalid input. Please enter a number.")
+                self.view.show_retry_message()
