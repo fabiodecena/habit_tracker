@@ -95,3 +95,26 @@ class TrackerService:
         """
         events = self.tracker_repo.find_by_habit_name(habit_name)
         return [(event.checked_at, event.notes) for event in events]
+
+    def update_completion_notes(self, event_id: str, notes: str) -> Tuple[bool, str]:
+        """
+        Updates notes for a specific completion.
+
+        Args:
+            event_id: Event ID
+            notes: New notes
+
+        Returns:
+            Tuple of (success:  bool, message: str)
+        """
+        # Verify event exists
+        event = self.tracker_repo.find_by_event_id(event_id)
+        if not event:
+            return False, "Completion not found"
+
+        success = self.tracker_repo.update_notes(event_id, notes)
+
+        if success:
+            return True, "Notes updated successfully"
+        else:
+            return False, "Failed to update notes"

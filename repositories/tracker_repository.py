@@ -1,7 +1,7 @@
 """
 Tracker Repository - Database operations for tracker events
 """
-from typing import List
+from typing import List, Optional
 from models.tracker import TrackerEvent
 from database.connection import Database
 
@@ -167,3 +167,58 @@ class TrackerRepository:
         finally:
             if not self.db:
                 con.close()
+
+    def update_notes(self, event_id: str, notes: str) -> bool:
+        """
+        Updates notes for a specific tracker event.
+
+        Args:
+            event_id: Event ID
+            notes: New notes
+
+        Returns:
+            True if successful, False otherwise
+        """
+        con = self.db or Database.get_connection()
+        cur = con.cursor()
+        try:
+            cur.execute(
+                "UPDATE tracker SET notes = ? WHERE event_id = ?",
+                (notes, event_id)
+            )
+            con.commit()
+            return True
+        except Exception as e:
+            print(f"Error updating notes: {e}")
+            con.rollback()
+            return False
+        finally:
+            if not self.db:
+                con.close()
+
+    def find_by_event_id(self, event_id: str) -> Optional['TrackerEvent']:
+        """
+        Find a tracker event by ID.
+
+        Args:
+            event_id: Event ID
+
+        Returns:
+            TrackerEvent or None
+        """
+        from models.tracker import TrackerEvent
+
+        con = self.db or Database.get_connection()
+        cur = con.cursor()
+        cur.execute(
+            """
+            SELECT event_id, habit_id, checked_at, notes
+            FROM tracker
+            WHERE event_id = ?
+            """,
+            (event_id,)
+        )
+        result = cur.fetchone()
+        if not self.db:
+            con.close()
+        return TrackerEvent.from_tuple(result) if result else None

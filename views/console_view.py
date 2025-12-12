@@ -54,7 +54,7 @@ class ConsoleView:
     def get_menu_choice(self) -> str:
         """Gets user's menu choice."""
         return self.console.input(
-            "[bold yellow]Enter your choice (1-9): [/bold yellow]"
+            "[bold yellow]Enter your choice (1-11): [/bold yellow]"
         )
 
     def get_habit_name(self, prompt: str = "Enter habit name: ") -> str:
@@ -83,6 +83,15 @@ class ConsoleView:
             User's input as string
         """
         return self.console.input(prompt)
+
+    def get_completion_notes(self) -> str:
+        """
+        Gets completion notes from the user.
+
+        Returns:
+            User's notes as string
+        """
+        return self.console.input("Enter notes (press Enter to skip): ").strip()
 
     # ============ Success Messages ============
 
@@ -288,6 +297,141 @@ class ConsoleView:
 
         self.console.print("\n")
         self.console.print(table)
+
+    def show_completion_table(self, summary_data: List[dict]):
+        """
+        Displays a comprehensive completion table for all habits.
+
+        Args:
+            summary_data: List of habit summary dictionaries
+        """
+        from rich.table import Table
+        from rich import box
+
+        self.show_header("📊 [bold magenta]Habit Completion Summary[/bold magenta]")
+        self.console.print()
+
+        if not summary_data:
+            self.console.print("  No habits found.", style="dim")
+            return
+
+        table = Table(
+            show_header=True,
+            header_style="bold magenta",
+            box=box.ROUNDED,
+            padding=(0, 1),
+            expand=False
+        )
+
+        table.add_column("#", style="bold yellow", width=3, justify="right")
+        table.add_column("Habit Name", style="cyan", min_width=20)
+        table.add_column("Periodicity", style="yellow", width=11, justify="center")  # CHANGED
+        table.add_column("Created", style="dim", width=10)
+        table.add_column("Last Done", style="green", width=10)
+        table.add_column("Streak", style="bold yellow", width=6, justify="right")
+        table.add_column("Total", style="blue", width=5, justify="right")
+        table.add_column("Notes", style="dim italic", max_width=30)
+
+        for idx, habit_data in enumerate(summary_data, 1):
+            created_date = habit_data['created_at'].strftime('%Y-%m-%d')
+
+            last_done = (
+                habit_data['last_completion'].strftime('%Y-%m-%d')
+                if habit_data['last_completion']
+                else "Never"
+            )
+
+            streak = str(habit_data['current_streak'])
+            total = str(habit_data['total_completions'])
+
+            # Truncate notes if too long
+            notes = habit_data['notes'][: 27] + "..." if len(habit_data['notes']) > 30 else habit_data['notes']
+
+            # Capitalize periodicity for display
+            periodicity_display = habit_data['periodicity'].capitalize()  # CHANGED
+
+            table.add_row(
+                str(idx),
+                habit_data['name'],
+                periodicity_display,  # CHANGED
+                created_date,
+                last_done,
+                streak,
+                total,
+                notes
+            )
+
+        self.console.print(table)
+        self.console.print()
+
+    def show_habit_completion_history(self, habit_data: dict):
+        """
+        Displays a detailed completion history for a specific habit.
+
+        Args:
+            habit_data: Dictionary with habit details and completions
+        """
+        from rich.table import Table
+        from rich.panel import Panel
+        from rich import box
+        from views.formatters import get_periodicity_icon
+
+        icon = get_periodicity_icon(habit_data['periodicity'])
+
+        # Header with habit info
+        header_text = f"{icon} [bold cyan]{habit_data['name']}[/bold cyan] ([yellow]{habit_data['periodicity']}[/yellow])"
+        self.console.print()
+        self.console.print(header_text)
+        self.console.print()
+
+        # Summary stats
+        stats = f"""[bold]Created:[/bold] {habit_data['created_at'].strftime('%Y-%m-%d %H:%M')}
+    [bold]Total Completions:[/bold] {habit_data['total_completions']}
+    [bold]Current Streak:[/bold] {habit_data['current_streak']}
+    [bold]Longest Streak:[/bold] {habit_data['longest_streak']}"""
+
+        if habit_data['comments']:
+            stats += f"\n[bold]Comments:[/bold] {habit_data['comments']}"
+
+        panel = Panel(
+            stats,
+            title="[bold white]Habit Statistics[/bold white]",
+            border_style="cyan",
+            box=box.ROUNDED,
+            padding=(1, 2)
+        )
+        self.console.print(panel)
+        self.console.print()
+
+        # Completion history table
+        if habit_data['completions']:
+            self.console.print("[bold magenta]📅 Completion History:[/bold magenta]")
+            self.console.print()
+
+            table = Table(
+                show_header=True,
+                header_style="bold cyan",
+                box=box.SIMPLE,
+                padding=(0, 2)
+            )
+
+            table.add_column("#", style="dim", width=4, justify="right")
+            table.add_column("Date", style="green", width=10)
+            table.add_column("Time", style="cyan", width=8)
+            table.add_column("Notes", style="italic", max_width=50)
+
+            for idx, completion in enumerate(habit_data['completions'], 1):
+                date_str = completion['checked_at'].strftime('%Y-%m-%d')
+                time_str = completion['checked_at'].strftime('%H:%M:%S')
+                notes = completion['notes'] if completion['notes'] else "-"
+
+                table.add_row(str(idx), date_str, time_str, notes)
+
+            self.console.print(table)
+        else:
+            self.console.print("  [dim]No completions recorded yet.[/dim]")
+
+        self.console.print()
 
     # ============ Edit Helpers ============
 

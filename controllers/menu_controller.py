@@ -5,6 +5,7 @@ from views.console_view import ConsoleView
 from controllers.habit_controller import HabitController
 from controllers.tracker_controller import TrackerController
 from controllers.analytics_controller import AnalyticsController
+from controllers.completion_controller import CompletionController  # NEW
 
 
 class MenuController:
@@ -24,6 +25,7 @@ class MenuController:
         self.habit_controller = HabitController(self.view, db)
         self.tracker_controller = TrackerController(self.view, db)
         self.analytics_controller = AnalyticsController(self.view, db)
+        self.completion_controller = CompletionController(self.view, db)  # NEW
 
     def run(self):
         """Main menu loop."""
@@ -48,6 +50,10 @@ class MenuController:
             elif choice == '8':
                 self.analytics_controller.show_longest_streak_specific()
             elif choice == '9':
+                self.completion_controller.show_completion_table()
+            elif choice == '10':  # NEW
+                self.completion_controller.edit_completion_notes()
+            elif choice == '11':  # Changed from '10'
                 self.view.show_goodbye()
                 break
             else:

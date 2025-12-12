@@ -2,7 +2,7 @@
 Analytics Service - Business logic for analytics and streaks
 """
 from datetime import datetime, timedelta
-from typing import Tuple
+from typing import Tuple, List, Optional
 from repositories.habit_repository import HabitRepository
 from repositories.tracker_repository import TrackerRepository
 
@@ -154,3 +154,86 @@ class AnalyticsService:
                 break
 
         return current_streak
+
+    def get_completion_summary(self) -> List[dict]:
+        """
+        Get a completion summary for all active habits.
+
+        Returns:
+            List of dictionaries with habit summary data
+        """
+        habits = self.habit_repo.find_all(include_inactive=False)
+        summary_data = []
+
+        for habit in habits:
+            # Get all completions for this habit
+            events = self.tracker_repo.find_by_habit_id(habit.habit_id)
+
+            # Calculate the last completion date
+            last_completion = events[-1].checked_at if events else None
+
+            # Calculate current streak
+            current_streak = self.get_current_streak(habit.name)
+
+            # Get latest notes (from most recent completion)
+            latest_notes = events[-1].notes if events else ""
+
+            summary_data.append({
+                'habit_id': habit.habit_id,
+                'name': habit.name,
+                'periodicity': habit.periodicity,
+                'created_at': habit.created_at,
+                'notes': latest_notes,
+                'last_completion': last_completion,
+                'current_streak': current_streak,
+                'total_completions': len(events)
+            })
+
+        # Sort by periodicity (daily first), then by creation date
+        periodicity_order = {'daily': 1, 'weekly': 2}
+        summary_data.sort(
+            key=lambda x: (
+                periodicity_order.get(x['periodicity'], 3),
+                x['created_at']
+            )
+        )
+
+        return summary_data
+
+    def get_habit_completion_history(self, habit_name: str) -> Optional[dict]:
+        """
+        Get a detailed completion history for a specific habit.
+
+        Args:
+            habit_name: Name of the habit
+
+        Returns:
+            Dictionary with habit details and completion history
+        """
+        habit = self.habit_repo.find_by_name(habit_name)
+        if not habit:
+            return None
+
+        events = self.tracker_repo.find_by_habit_id(habit.habit_id)
+
+        # Sort by date (oldest first)
+        completions = [
+            {
+                'event_id': event.event_id,  # ADDED
+                'checked_at': event.checked_at,
+                'notes': event.notes
+            }
+            for event in sorted(events, key=lambda e: e.checked_at)
+        ]
+
+        return {
+            'habit_id': habit.habit_id,
+            'name': habit.name,
+            'periodicity': habit.periodicity,
+            'created_at': habit.created_at,
+            'comments': habit.comments,
+            'completions': completions,
+            'total_completions': len(completions),
+            'longest_streak': self.calculate_longest_streak(habit_name),
+            'current_streak': self.get_current_streak(habit_name)
+        }

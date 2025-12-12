@@ -48,7 +48,9 @@ def create_menu_table() -> Table:
         ("6.", "🔍", "[gold1]List habits by periodicity[/gold1]"),
         ("7.", "🏆", "[gold1]Show longest streak of all habits[/gold1]"),
         ("8.", "🎯", "[gold1]Show longest streak for a specific habit[/gold1]"),
-        ("9.", "👋", "[red]Exit[/red]")
+        ("9.", "📊", "[gold1]View completion table[/gold1]"),
+        ("10.", "✏️", "[gold1]Edit completion notes[/gold1]"),  # NEW OPTION
+        ("11.", "👋", "[red]Exit[/red]")
     ]
 
     table = Table(
