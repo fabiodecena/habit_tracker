@@ -49,7 +49,7 @@ def create_menu_table() -> Table:
         ("7.", "🏆", "[gold1]Show longest streak of all habits[/gold1]"),
         ("8.", "🎯", "[gold1]Show longest streak for a specific habit[/gold1]"),
         ("9.", "📊", "[gold1]View completion table[/gold1]"),
-        ("10.", "✏️", "[gold1]Edit completion notes[/gold1]"),  # NEW OPTION
+        ("10.", "📌", "[gold1]Edit completion notes[/gold1]"),
         ("11.", "👋", "[red]Exit[/red]")
     ]
 

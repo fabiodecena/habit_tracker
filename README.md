@@ -6,23 +6,67 @@ A professional Python command-line application to track and analyze your habits,
 ![Architecture](https://img.shields.io/badge/Architecture-MVC-green)
 ![License](https://img.shields.io/badge/License-MIT-yellow)
 
+---
+
+## 📑 Table of Contents
+
+- [Features](#-features)
+- [Architecture](#️-architecture)
+  - [Directory Structure](#directory-structure)
+  - [Architecture Layers Explained](#-architecture-layers-explained)
+  - [Data Flow](#-data-flow)
+- [Getting Started](#-getting-started)
+  - [Prerequisites](#prerequisites)
+  - [Installation](#installation)
+- [Usage](#-usage)
+  - [Interactive Mode](#interactive-mode-recommended)
+  - [Direct CLI Commands](#direct-cli-commands)
+- [Menu Options](#-menu-options)
+- [Running Tests](#-running-tests)
+- [Database Schema](#️-database-schema)
+- [Configuration](#️-configuration)
+- [Key Features in Detail](#-key-features-in-detail)
+  - [Soft Delete (Archive)](#1-soft-delete-archive)
+  - [UUID-based Identification](#2-uuid-based-identification)
+  - [Streak Calculation Algorithm](#3-streak-calculation-algorithm)
+  - [Input Validation](#4-input-validation)
+  - [Completion Notes](#5-completion-notes)
+  - [Completion Table & History](#6-completion-table--history)
+  - [Functional Programming](#7-functional-programming)
+- [Example Workflow](#-example-workflow)
+- [Benefits of This Architecture](#-benefits-of-this-architecture)
+- [Understanding the Code Flow](#-understanding-the-code-flow)
+- [Dependencies](#-dependencies)
+- [Learning from This Project](#-learning-from-this-project)
+- [Contributing](#-contributing)
+- [License](#-license)
+- [Support](#-support)
+
+---
+
 ## ✨ Features
 
 - ✅ **Create, edit, and delete habits** with validation
 - ✅ **Track daily and weekly habits** with optional notes
+- ✅ **Add and edit completion notes** for each check-off
 - ✅ **Calculate longest streaks** with smart date normalization
 - ✅ **Filter habits by periodicity** (daily/weekly)
 - ✅ **Soft delete support** - archive habits instead of deleting
+- ✅ **Completion table** - comprehensive overview with statistics
+- ✅ **Detailed completion history** - view all check-offs with timestamps and notes
 - ✅ **Beautiful CLI interface** powered by Rich
 - ✅ **Pre-seeded sample data** for quick start
 - ✅ **UUID-based unique identifiers** for all entities
 - ✅ **Comprehensive test suite**
+- ✅ **Functional programming** approach for data sorting
 
 ---
 
 ## 🏗️ Architecture
 
 This application follows **professional software engineering practices** with a clean separation of concerns:
+
+### Directory Structure
 
 ```
 📁 habit_tracker/
@@ -53,6 +97,7 @@ This application follows **professional software engineering practices** with a 
 │   ├── habit_controller.py       # Coordinates habit operations
 │   ├── tracker_controller.py     # Coordinates tracking operations
 │   ├── analytics_controller.py   # Coordinates analytics operations
+│   ├── completion_controller.py  # Coordinates completion table operations
 │   └── menu_controller.py        # Main menu navigation
 │
 ├── 📂 database/                  # Database Infrastructure
@@ -95,7 +140,9 @@ class Habit:
     periodicity: str
     habit_id: Optional[str] = None
     created_at: Optional[datetime] = None
-    # ... other properties
+    updated_at: Optional[datetime] = None
+    comments: str = ""
+    is_active: bool = True
 ```
 
 ### 2️⃣ **Repositories Layer** (Data Access)
@@ -110,8 +157,8 @@ class Habit:
 
 Example:
 ```python
-class HabitRepository:
-    def save(self, habit:  Habit) -> bool:
+class HabitRepository: 
+    def save(self, habit: Habit) -> bool:
         # INSERT INTO habits ... 
         
     def find_by_name(self, name: str) -> Optional[Habit]:
@@ -144,7 +191,7 @@ class HabitService:
 ### 4️⃣ **Controllers Layer** (Coordination)
 **Responsibility**:  Coordinate between services and views
 
-**Files**: `controllers/habit_controller.py`, `controllers/tracker_controller.py`, `controllers/analytics_controller.py`, `controllers/menu_controller.py`
+**Files**: `controllers/habit_controller.py`, `controllers/tracker_controller.py`, `controllers/analytics_controller.py`, `controllers/completion_controller.py`, `controllers/menu_controller.py`
 
 - No business logic
 - No database operations
@@ -154,19 +201,19 @@ Example:
 ```python
 class HabitController:
     def create_habit(self):
-        name = self.view.get_habit_name()
+        name = self.view. get_habit_name()
         periodicity = self.view.get_periodicity()
         
         success, message = self.service.create_habit(name, periodicity)
         
-        if success:
-            self.view. show_habit_created(name)
+        if success: 
+            self.view.show_habit_created(name)
         else:
-            self. view.show_error(message)
+            self.view. show_error(message)
 ```
 
 ### 5️⃣ **Views Layer** (Presentation)
-**Responsibility**:  Handle all user interface operations
+**Responsibility**: Handle all user interface operations
 
 **Files**: `views/console_view.py`, `views/formatters.py`
 
@@ -227,7 +274,7 @@ User Input
 
 1. **Clone or download the repository**
    ```bash
-   git clone https://github.com/fabiodecena/habit_tracker. git
+   git clone https://github.com/fabiodecena/habit_tracker.git
    cd habit_tracker
    ```
 
@@ -251,7 +298,7 @@ User Input
 
 ### Interactive Mode (Recommended)
 
-Run without arguments to enter the beautiful interactive menu: 
+Run without arguments to enter the beautiful interactive menu:
 
 ```bash
 python main.py
@@ -261,17 +308,19 @@ python main.py
 ```
 ✨ HABIT TRACKER ✨
 
-1. ➕ Create a new habit
-2. ❌ Delete a habit
-3. ✅ Check-off a habit (Complete task)
-4. 📝 Edit a habit
-5. 📋 List all habits
-6. 🔍 List habits by periodicity
-7. 🏆 Show longest streak of all habits
-8. 🎯 Show longest streak for a specific habit
-9. 👋 Exit
+1.   ➕ Create a new habit
+2.  ❌ Delete a habit
+3.  ✅ Check-off a habit (Complete task)
+4.  📝 Edit a habit
+5.  📋 List all habits
+6.  🔍 List habits by periodicity
+7.  🏆 Show longest streak of all habits
+8.  🎯 Show longest streak for a specific habit
+9.  📊 View completion table
+10. ✏️ Edit completion notes
+11. 👋 Exit
 
-Enter your choice (1-9): _
+Enter your choice (1-11): _
 ```
 
 ---
@@ -300,12 +349,12 @@ python cli.py list
 
 Output:
 ```
-📋 Currently tracked habits: 
+📋 Currently tracked habits:
 
 Name              Periodicity
-☀️  Read Journal  daily
-☀️  Skin Care     daily
-📆  Water Plants    weekly
+☀️  Drink Water   daily
+☀️  Read Book     daily
+📆 Clean House    weekly
 ```
 
 #### Filter Habits by Periodicity
@@ -334,11 +383,29 @@ python cli.py delete "Exercise"
 #### View Longest Streaks
 ```bash
 # Show the habit with the longest streak
-python cli.py champion
+python cli. py champion
 
 # Show streak for a specific habit
 python cli. py streak "Exercise"
 ```
+
+---
+
+## 📋 Menu Options
+
+| Option | Feature | Description |
+|--------|---------|-------------|
+| **1** | ➕ Create a new habit | Add a new daily or weekly habit |
+| **2** | ❌ Delete a habit | Remove a habit (soft delete by default) |
+| **3** | ✅ Check-off a habit | Mark a habit as completed with optional notes |
+| **4** | 📝 Edit a habit | Change habit name or periodicity |
+| **5** | 📋 List all habits | Display all active habits in a table |
+| **6** | 🔍 List habits by periodicity | Filter habits by daily or weekly |
+| **7** | 🏆 Show longest streak of all habits | Find the champion habit |
+| **8** | 🎯 Show longest streak for a specific habit | View streak for a selected habit |
+| **9** | 📊 View completion table | Comprehensive overview with statistics and detailed history |
+| **10** | ✏️ Edit completion notes | Update notes for existing check-offs |
+| **11** | 👋 Exit | Close the application |
 
 ---
 
@@ -410,19 +477,17 @@ Edit `config.py` to customize settings:
 
 ```python
 class Config:
-    """Application configuration settings"""
     DATABASE_NAME = "main.db"
     DEFAULT_PERIODICITY_OPTIONS = ['daily', 'weekly']
     SEED_WEEKS = 4
     SEED_SUCCESS_RATE = 0.8  # 80% completion rate for seed data
     
-    # Predefined habits for seeding
     SEED_HABITS = [
-        ("Read Journal", "daily"),
-        ("Skin Care", "daily"),
-        ("Play Music", "daily"),
-        ("Water Plants", "weekly"),
-        ("Finance Check", "weekly")
+        ("Drink Water", "daily"),
+        ("Read Book", "daily"),
+        ("Exercise", "daily"),
+        ("Clean House", "weekly"),
+        ("Meditate", "weekly")
     ]
 ```
 
@@ -468,11 +533,11 @@ Smart streak calculation that handles:
 - Example: Completed on Jan 1 (Mon), Jan 8 (Mon), Jan 15 (Mon) → Streak = 3
 
 ### 4. Input Validation
-All user input is validated in the service layer:
+All user input is validated in the service layer: 
 
 ```python
 # Empty name
-create_habit("", "daily") 
+create_habit("", "daily")
 → (False, "Habit name cannot be empty")
 
 # Invalid periodicity
@@ -488,6 +553,99 @@ check_off_habit("Exercise", datetime(2099, 1, 1))
 → (False, "Cannot check off a habit in the future")
 ```
 
+### 5. Completion Notes
+Add context to each habit completion:
+
+**When checking off:**
+```bash
+✅ Check-off a habit
+
+Current habits:
+  1. ☀️ Play Music (daily)
+
+Enter the number of the habit to check-off:  1
+
+Do you want to add notes for this completion? (y/n): y
+Enter notes (press Enter to skip): Amazing 30-minute session! 
+
+✅ Habit 'Play Music' marked as done!
+   📝 Notes: Amazing 30-minute session!
+```
+
+**Edit existing notes (Option 10):**
+```bash
+✏️  Edit Completion Notes
+
+[Select habit → Select completion → Enter new notes]
+
+✅ Notes updated successfully!
+```
+
+### 6. Completion Table & History
+Comprehensive visualization of your habits (Option 9):
+
+**Summary Table:**
+```
+📊 Habit Completion Summary
+
+╭───┬────────────────┬─────────────┬────────────┬────────────┬────────┬───────┬────────────────╮
+│ # │ Habit Name     │ Periodicity │ Created    │ Last Done  │ Streak │ Total │ Notes          │
+├───┼────────────────┼─────────────┼────────────┼────────────┼────────┼───────┼────────────────┤
+│ 1 │ Play Music     │   Daily     │ 2025-01-15 │ 2025-01-20 │      5 │    15 │ Great session! │
+│ 2 │ Skin Care      │   Daily     │ 2025-01-16 │ 2025-01-20 │      3 │    10 │                │
+│ 3 │ Finance Check  │   Weekly    │ 2025-01-10 │ 2025-01-15 │      2 │     3 │                │
+╰───┴────────────────┴─────────────┴────────────┴────────────┴────────┴───────┴────────────────╯
+
+Enter the number of a habit to view detailed history (or 'q' to quit): _
+```
+
+**Detailed History (after selecting a habit):**
+```
+☀️ Play Music (daily)
+
+╭──────────── Habit Statistics ────────────╮
+│ Created: 2025-01-15 10:30                │
+│ Total Completions: 15                    │
+│ Current Streak: 5                        │
+│ Longest Streak: 7                        │
+╰──────────────────────────────────────────╯
+
+📅 Completion History: 
+
+   #  Date        Time      Notes
+────────────────────────────────────────────
+   1  2025-01-15  10:30:00  Started the habit
+   2  2025-01-16  09:15:00  Piano practice
+   3  2025-01-17  10:00:00  Amazing 30-minute session!
+  ... 
+```
+
+### 7. Functional Programming
+Data sorting uses functional programming approach:
+
+```python
+# Repositories return data without sorting
+habits = map(Habit.from_tuple, results)
+
+# Filter inactive habits if needed
+if not include_inactive:
+    habits = filter(lambda h: h.is_active, habits)
+
+# Sort using functional key
+def get_sort_key(habit:  Habit) -> tuple:
+    periodicity_map = {'daily': 1, 'weekly': 2}
+    periodicity_priority = periodicity_map.get(habit.periodicity, 3)
+    creation_time = -habit.created_at.timestamp()
+    return (periodicity_priority, creation_time)
+
+return sorted(habits, key=get_sort_key)
+```
+
+Benefits:
+- More flexible than SQL ORDER BY
+- Easier to test
+- Clean separation of concerns
+
 ---
 
 ## 🔍 Example Workflow
@@ -501,25 +659,35 @@ python main.py
 # 2. Create a new habit
 python cli.py create "Morning Run" daily
 
-# 3. Check it off
+# 3. Check it off with notes
 python cli.py checkoff "Morning Run" --notes "5km in 30 minutes"
 
+# Or use interactive mode: 
+# Option 3 → Select habit → Add notes
+
 # 4. Do it again the next day (building a streak!)
-python cli.py checkoff "Morning Run"
+python cli.py checkoff "Morning Run" --notes "Felt great today!"
 
 # 5. Check your streak
 python cli.py streak "Morning Run"
 # Output: 🎯 Longest streak for 'Morning Run': 2
 
-# 6. See all your habits
+# 6. View completion table
+# Option 9 → See all habits with statistics
+# Select a habit number → View detailed history
+
+# 7. Edit completion notes if needed
+# Option 10 → Select habit → Select completion → Edit notes
+
+# 8. See all your habits
 python cli.py list
 
-# 7. Edit a habit
+# 9. Edit a habit
 python cli.py edit "Morning Run" --new-name "Daily Run"
 
-# 8. Find the champion habit
+# 10. Find the champion habit
 python cli.py champion
-# Output: 🏆 Champion:  'Daily Run' with streak of 2! 
+# Output: 🏆 Champion: 'Daily Run' with streak of 5! 
 ```
 
 ---
@@ -592,9 +760,9 @@ def save(self, habit:  Habit) -> bool:
 
 **5. View shows result (`views/console_view.py`):**
 ```python
-def show_habit_created(self, name: str):
+def show_habit_created(self, name:  str):
     self.console.print(
-        f"✅ Habit '{name}' created!",
+        f"✅ Habit '{name}' created! ",
         style="green"
     )
 ```
@@ -611,7 +779,7 @@ rich>=13.0.0
 
 **Why these libraries? **
 - **click**: Professional CLI framework with command parsing, options, and arguments
-- **rich**:  Beautiful terminal formatting with colors, tables, and panels
+- **rich**: Beautiful terminal formatting with colors, tables, and panels
 
 ---
 
@@ -637,6 +805,23 @@ This project demonstrates professional software engineering practices:
 - ✅ Input validation at service layer
 - ✅ Unit tests for critical functionality
 - ✅ Clear separation of concerns
+- ✅ Functional programming for data transformation
+
+### What You'll Learn
+
+By studying this codebase, you'll learn: 
+
+1. **How to structure a professional Python application**
+2. **Separation of concerns** - Why it matters and how to do it
+3. **Service layer pattern** - Centralizing business logic
+4. **Repository pattern** - Abstracting data access
+5. **Clean architecture** - Making code maintainable
+6. **Type hints and dataclasses** - Modern Python features
+7. **Click framework** - Building professional CLIs
+8. **Rich library** - Beautiful terminal UIs
+9. **Unit testing** - Testing layered applications
+10. **SQLite with Python** - Database operations
+11. **Functional programming** - Using `map`, `filter`, `sorted`
 
 ---
 
@@ -658,23 +843,6 @@ MIT License - Free to use for learning or personal projects.
 
 ---
 
-## 🎓 What You'll Learn
-
-By studying this codebase, you'll learn: 
-
-1. **How to structure a professional Python application**
-2. **Separation of concerns** - Why it matters and how to do it
-3. **Service layer pattern** - Centralizing business logic
-4. **Repository pattern** - Abstracting data access
-5. **Clean architecture** - Making code maintainable
-6. **Type hints and dataclasses** - Modern Python features
-7. **Click framework** - Building professional CLIs
-8. **Rich library** - Beautiful terminal UIs
-9. **Unit testing** - Testing layered applications
-10. **SQLite with Python** - Database operations
-
----
-
 ## 📞 Support
 
 - **Issues**: Open an issue on GitHub
@@ -684,3 +852,15 @@ By studying this codebase, you'll learn:
 ---
 
 **Built with ❤️ using clean architecture principles** 🚀
+
+---
+
+## 🎓 Additional Resources
+
+- [Python Dataclasses Documentation](https://docs.python.org/3/library/dataclasses.html)
+- [Click Documentation](https://click.palletsprojects.com/)
+- [Rich Documentation](https://rich.readthedocs.io/)
+- [SQLite Documentation](https://www.sqlite.org/docs.html)
+- [MVC Pattern](https://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93controller)
+- [Repository Pattern](https://martinfowler.com/eaaCatalog/repository.html)
+- [Service Layer Pattern](https://martinfowler.com/eaaCatalog/serviceLayer. html)
