@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 from views.console_view import ConsoleView
 from services.habit_service import HabitService
 from services.tracker_service import TrackerService
+from repositories.habit_repository import HabitRepository
 from config import Config
 
 
@@ -15,22 +16,28 @@ def seed_predefined_data(db):
     Args:
         db: Database connection
     """
-    habit_service = HabitService(db)
+    # Check if data already exists using a repository
+    habit_repo = HabitRepository(db)
 
-    # Check if data already exists
-    if habit_service.has_habits():
-        return
+    if habit_repo.count() > 0:
+        return  # Data already exists, don't overwrite
 
     view = ConsoleView()
     view.show_seeding_start()
 
+    habit_service = HabitService(db)
     tracker_service = TrackerService(db)
+
     end_date = datetime.now()
     start_date = end_date - timedelta(weeks=Config.SEED_WEEKS)
 
     for name, periodicity in Config.SEED_HABITS:
         # Create habit
-        habit_service.create_habit(name, periodicity)
+        success, message = habit_service.create_habit(name, periodicity)
+
+        if not success:
+            print(f"Warning: {message}")
+            continue
 
         # Generate tracking data
         current = start_date

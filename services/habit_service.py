@@ -1,7 +1,8 @@
 """
 Habit Service - Business logic for habit operations
 """
-from typing import List, Optional
+
+from typing import List, Optional, Tuple
 from models.habit import Habit
 from repositories.habit_repository import HabitRepository
 from config import Config
@@ -21,7 +22,7 @@ class HabitService:
         """
         self.repository = HabitRepository(db)
 
-    def create_habit(self, name: str, periodicity: str) -> tuple[bool, str]:
+    def create_habit(self, name: str, periodicity:  str) -> Tuple[bool, str]:
         """
         Creates a new habit with validation.
 
@@ -45,7 +46,7 @@ class HabitService:
             return False, f"Habit '{name}' already exists"
 
         # Create and save
-        habit = Habit(name=name.strip(), periodicity=periodicity)
+        habit = Habit(name=name. strip(), periodicity=periodicity)
         success = self.repository.save(habit)
 
         if success:
@@ -54,11 +55,12 @@ class HabitService:
             return False, "Failed to create habit"
 
     def update_habit(
-            self,
-            old_name: str,
-            new_name: str,
-            new_periodicity: str
-    ) -> tuple[bool, str]:
+        self,
+        old_name: str,
+        new_name: str,
+        new_periodicity: str,
+        comments: str = None
+    ) -> Tuple[bool, str]:
         """
         Updates an existing habit with validation.
 
@@ -66,12 +68,13 @@ class HabitService:
             old_name: Current habit name
             new_name: New habit name
             new_periodicity: New periodicity
+            comments: Optional comments to update
 
         Returns:
             Tuple of (success: bool, message: str)
         """
         # Validation
-        if not new_name or not new_name.strip():
+        if not new_name or not new_name. strip():
             return False, "Habit name cannot be empty"
 
         if new_periodicity not in Config.DEFAULT_PERIODICITY_OPTIONS:
@@ -84,25 +87,30 @@ class HabitService:
 
         # Check if new name conflicts with existing habit
         if new_name != old_name:
-            existing = self.repository.find_by_name(new_name)
+            existing = self.repository. find_by_name(new_name)
             if existing:
                 return False, f"Habit '{new_name}' already exists"
 
-        # Update
-        updated_habit = Habit(name=new_name.strip(), periodicity=new_periodicity)
-        success = self.repository.update(old_name, updated_habit)
+        # Update the habit object
+        old_habit.name = new_name.strip()
+        old_habit.periodicity = new_periodicity
+        if comments is not None:
+            old_habit.comments = comments
+
+        success = self.repository.update(old_habit)
 
         if success:
             return True, f"Habit updated successfully"
         else:
             return False, "Failed to update habit"
 
-    def delete_habit(self, name: str) -> tuple[bool, str]:
+    def delete_habit(self, name: str, soft_delete: bool = True) -> Tuple[bool, str]:
         """
         Deletes a habit.
 
         Args:
             name: Habit name
+            soft_delete: If True, mark as inactive; if False, permanently delete
 
         Returns:
             Tuple of (success: bool, message: str)
@@ -112,21 +120,25 @@ class HabitService:
         if not habit:
             return False, f"Habit '{name}' not found"
 
-        success = self.repository.delete(name)
+        success = self.repository.delete(habit. habit_id, soft_delete)
 
         if success:
-            return True, f"Habit '{name}' deleted successfully"
+            action = "archived" if soft_delete else "deleted"
+            return True, f"Habit '{name}' {action} successfully"
         else:
             return False, "Failed to delete habit"
 
-    def get_all_habits(self) -> List[Habit]:
+    def get_all_habits(self, include_inactive: bool = False) -> List[Habit]:
         """
         Returns all habits.
+
+        Args:
+            include_inactive: Whether to include inactive habits
 
         Returns:
             List of Habit objects
         """
-        return self.repository.find_all()
+        return self.repository.find_all(include_inactive)
 
     def get_habit_by_name(self, name: str) -> Optional[Habit]:
         """
@@ -140,17 +152,18 @@ class HabitService:
         """
         return self.repository.find_by_name(name)
 
-    def get_habits_by_periodicity(self, periodicity: str) -> List[Habit]:
+    def get_habits_by_periodicity(self, periodicity: str, include_inactive: bool = False) -> List[Habit]:
         """
         Returns habits filtered by periodicity.
 
         Args:
             periodicity: 'daily' or 'weekly'
+            include_inactive: Whether to include inactive habits
 
         Returns:
             List of Habit objects
         """
-        return self.repository.find_by_periodicity(periodicity)
+        return self. repository.find_by_periodicity(periodicity, include_inactive)
 
     def has_habits(self) -> bool:
         """

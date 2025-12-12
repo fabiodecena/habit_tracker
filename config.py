@@ -12,9 +12,9 @@ class Config:
 
     # Predefined habits for seeding
     SEED_HABITS = [
-        ("Journal", "daily"),
+        ("Read Journal", "daily"),
         ("Skin Care", "daily"),
         ("Play Music", "daily"),
         ("Water Plants", "weekly"),
-        ("Finance check", "weekly")
+        ("Finance Check", "weekly")
     ]

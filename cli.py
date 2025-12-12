@@ -1,21 +1,22 @@
 """
 CLI entry point using Click
 """
-import click
 from datetime import datetime
-from database.connection import get_connection
-from models.habit import Habit
-from models.tracker import Tracker
-from utils.seed_data import seed_predefined_data
+import click
 from controllers.menu_controller import MenuController
+from database.connection import Database
+from services.analytics_service import AnalyticsService
+from services.habit_service import HabitService
+from services.tracker_service import TrackerService
+from utils.seed_data import seed_predefined_data
 from views.console_view import ConsoleView
 
 
 @click.group(invoke_without_command=True)
 @click.pass_context
 def cli(ctx):
-    """✨ Habit Tracker CLI - Build better habits!  ✨"""
-    db = get_connection()
+    """✨ Habit Tracker CLI - Build better habits!   ✨"""
+    db = Database. get_connection()
     seed_predefined_data(db)
 
     # Store db in context for other commands
@@ -38,10 +39,14 @@ def create(ctx, name, periodicity):
     """✨ Create a new habit"""
     db = ctx.obj['db']
     view = ConsoleView()
+    service = HabitService(db)
 
-    habit = Habit(name, periodicity)
-    habit.create(db)
-    view.show_habit_created(name)
+    success, message = service.create_habit(name, periodicity)
+
+    if success:
+        view.show_habit_created(name)
+    else:
+        view.show_error(message)
 
 
 @cli.command()
@@ -51,81 +56,106 @@ def delete(ctx, name):
     """🗑️ Delete a habit"""
     db = ctx.obj['db']
     view = ConsoleView()
+    service = HabitService(db)
 
-    habit = Habit(name, "daily")
-    habit.delete(db)
-    view.show_habit_deleted(name)
+    success, message = service.delete_habit(name)
+
+    if success:
+        view.show_habit_deleted(name)
+    else:
+        view.show_error(message)
 
 
 @cli.command()
 @click.argument('name')
+@click.option('--notes', default='', help='Optional notes for this check-off')
 @click.pass_context
-def checkoff(ctx, name):
+def checkoff(ctx, name, notes):
     """✅ Check-off a habit (mark as complete)"""
     db = ctx.obj['db']
     view = ConsoleView()
+    service = TrackerService(db)
 
-    Tracker.check_off(name, datetime.now(), db)
-    view.show_habit_checked_off(name)
+    success, message = service.check_off_habit(name, datetime.now(), notes)
+
+    if success:
+        view. show_habit_checked_off(name)
+    else:
+        view.show_error(message)
 
 
 @cli.command()
 @click.argument('old_name')
 @click.option('--new-name', help='New name for the habit')
 @click.option('--periodicity', type=click.Choice(['daily', 'weekly']), help='New periodicity')
+@click.option('--comments', help='Comments about the habit')
 @click.pass_context
-def edit(ctx, old_name, new_name, periodicity):
+def edit(ctx, old_name, new_name, periodicity, comments):
     """✏️ Edit a habit's name or periodicity"""
     db = ctx.obj['db']
     view = ConsoleView()
+    habit_service = HabitService(db)
 
-    target_habit = Habit.find_by_name(old_name, db)
-
-    if not target_habit:
+    # Get existing habit
+    habit = habit_service.get_habit_by_name(old_name)
+    if not habit:
         view.show_habit_not_found(old_name)
         return
 
+    # Use existing values if not provided
     final_name = new_name if new_name else old_name
-    final_periodicity = periodicity if periodicity else target_habit[1]
+    final_periodicity = periodicity if periodicity else habit.periodicity
+    final_comments = comments if comments is not None else habit.comments
 
-    if Habit.update(old_name, final_name, final_periodicity, db):
+    # Update comments on the habit object
+    if comments is not None:
+        habit.comments = final_comments
+
+    success, message = habit_service.update_habit(old_name, final_name, final_periodicity)
+
+    if success:
         view.show_habit_updated(old_name, final_name, final_periodicity)
     else:
-        view.show_error("Error updating habit.")
+        view.show_error(message)
 
 
 @cli.command()
 @click.pass_context
-def list(ctx):
+def habits_list(ctx):
     """📋 List all habits"""
     db = ctx.obj['db']
     view = ConsoleView()
+    service = HabitService(db)
 
-    habits = Habit.get_all(db)
-    view.show_habits_list(habits)
+    habits = service.get_all_habits()
+    habit_tuples = [(h.name, h.periodicity) for h in habits]
+    view.show_habits_list(habit_tuples)
 
 
 @cli.command()
 @click.argument('periodicity', type=click.Choice(['daily', 'weekly']))
 @click.pass_context
-def filter(ctx, periodicity):
+def habits_filter(ctx, periodicity):
     """🔍 List habits by periodicity"""
     db = ctx.obj['db']
     view = ConsoleView()
+    service = HabitService(db)
 
-    habits = Habit.get_by_periodicity(periodicity, db)
-    view.show_filtered_habits(periodicity, habits)
+    habits = service.get_habits_by_periodicity(periodicity)
+    habit_tuples = [(h. name, h.periodicity) for h in habits]
+    view. show_filtered_habits(periodicity, habit_tuples)
 
 
 @cli.command()
 @click.pass_context
 def champion(ctx):
-    """🏆 Show the habit with the longest streak"""
-    db = ctx.obj['db']
+    """🏆 Show the habit with the longest habit_streak"""
+    db = ctx. obj['db']
     view = ConsoleView()
+    service = AnalyticsService(db)
 
-    habit_name, streak = Tracker.get_longest_streak_all(db)
-    view.show_longest_streak_all(habit_name, streak)
+    habit_name, habit_streak = service.get_longest_streak_all_habits()
+    view.show_longest_streak_all(habit_name, habit_streak)
 
 
 @cli.command()
@@ -133,13 +163,14 @@ def champion(ctx):
 @click.pass_context
 def streak(ctx, name):
     """🎯 Show the longest streak for a specific habit"""
-    db = ctx.obj['db']
+    db = ctx. obj['db']
     view = ConsoleView()
+    habit_service = HabitService(db)
+    analytics_service = AnalyticsService(db)
 
-    target = Habit.find_by_name(name, db)
-
-    if target:
-        streak_count = Tracker.calculate_longest_streak(target[0], target[1], db)
+    habit = habit_service.get_habit_by_name(name)
+    if habit:
+        streak_count = analytics_service.calculate_longest_streak(name)
         view.show_longest_streak_specific(name, streak_count)
     else:
         view.show_habit_not_found(name)

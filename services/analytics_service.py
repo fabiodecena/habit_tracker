@@ -27,7 +27,7 @@ class AnalyticsService:
         Calculates the longest streak for a habit.
 
         Args:
-            habit_name:  Name of the habit
+            habit_name: Name of the habit
 
         Returns:
             Length of the longest streak
@@ -36,7 +36,7 @@ class AnalyticsService:
         if not habit:
             return 0
 
-        events = self.tracker_repo.find_by_habit(habit_name)
+        events = self.tracker_repo.find_by_habit_id(habit.habit_id)  # Use habit_id
         if not events:
             return 0
 
@@ -84,12 +84,12 @@ class AnalyticsService:
         Returns:
             Tuple of (habit_name, streak_length)
         """
-        habits = self.habit_repo.find_all()
+        habits = self.habit_repo. find_all()
         if not habits:
             return "", 0
 
         streaks = [
-            (habit.name, self.calculate_longest_streak(habit.name))
+            (habit.name, self. calculate_longest_streak(habit. name))
             for habit in habits
         ]
 
@@ -105,11 +105,11 @@ class AnalyticsService:
         Returns:
             Length of current streak
         """
-        habit = self.habit_repo.find_by_name(habit_name)
+        habit = self.habit_repo. find_by_name(habit_name)
         if not habit:
             return 0
 
-        events = self.tracker_repo.find_by_habit(habit_name)
+        events = self.tracker_repo.find_by_habit_id(habit.habit_id)  # Use habit_id
         if not events:
             return 0
 
@@ -125,7 +125,7 @@ class AnalyticsService:
             normalized_dates = sorted({
                 datetime.fromisocalendar(
                     d.isocalendar()[0],
-                    d.isocalendar()[1],
+                    d. isocalendar()[1],
                     1
                 ).date()
                 for d in history
