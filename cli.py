@@ -34,17 +34,20 @@ def cli(ctx):
 @cli.command()
 @click.argument('name')
 @click.argument('periodicity', type=click.Choice(['daily', 'weekly']))
+@click.option('--comments', default='', help='Description/comments for the habit')
 @click.pass_context
-def create(ctx, name, periodicity):
+def create(ctx, name, periodicity, comments):
     """✨ Create a new habit"""
     db = ctx.obj['db']
     view = ConsoleView()
     service = HabitService(db)
 
-    success, message = service.create_habit(name, periodicity)
+    success, message = service.create_habit(name, periodicity, comments)
 
     if success:
         view.show_habit_created(name)
+        if comments:
+            view.console.print(f"   💬 Description: [italic]{comments}[/italic]", style="dim cyan")
     else:
         view.show_error(message)
 
@@ -121,14 +124,14 @@ def edit(ctx, old_name, new_name, periodicity, comments):
 
 @cli.command()
 @click.pass_context
-def habits_list(ctx):
+def habit_list(ctx):
     """📋 List all habits"""
     db = ctx.obj['db']
     view = ConsoleView()
     service = HabitService(db)
 
     habits = service.get_all_habits()
-    habit_tuples = [(h.name, h.periodicity) for h in habits]
+    habit_tuples = [(h.name, h.periodicity, h.comments) for h in habits]
     view.show_habits_list(habit_tuples)
 
 

@@ -26,7 +26,7 @@ def create_habits_table(habits: List[Tuple[str, str]]) -> Table:
     table.add_column("Periodicity", style="yellow", justify="left")
 
     for habit in habits:
-        periodicity_icon = "☀️" if habit[1] == "daily" else "📆"
+        periodicity_icon = "🕐" if habit[1] == "daily" else "📆"
         table.add_row(f"{periodicity_icon}  {habit[0]}", habit[1])
 
     return table
@@ -79,4 +79,4 @@ def get_periodicity_icon(periodicity: str) -> str:
     Returns:
         Icon string
     """
-    return "☀️" if periodicity == "daily" else "📆"
+    return "🕐" if periodicity == "daily" else "📆"

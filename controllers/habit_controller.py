@@ -22,16 +22,27 @@ class HabitController:
         self.service = HabitService(db)
 
     def create_habit(self):
-        """Interactive habit creation."""
+        """Interactive habit creation with optional comments."""
         self.view.show_header("✨ [bold cyan]Create a new habit[/bold cyan]")
 
         name = self.view.get_habit_name()
         periodicity = self.view.get_periodicity()
 
-        success, message = self.service.create_habit(name, periodicity)
+        # Ask if the user wants to add comments
+        add_comments = self.view.get_confirmation(
+            "\nDo you want to add a description/comment for this habit?  (y/n): "
+        )
+
+        comments = ""
+        if add_comments.lower() == 'y':
+            comments = self.view.get_habit_comments()
+
+        success, message = self.service.create_habit(name, periodicity, comments)
 
         if success:
             self.view.show_habit_created(name)
+            if comments:
+                self.view.console.print(f"   💬 Description: [italic]{comments}[/italic]", style="dim cyan")
         else:
             self.view.show_error(message)
 
@@ -113,24 +124,32 @@ class HabitController:
                 if 1 <= choice_num <= len(habits):
                     selected_habit = habits[choice_num - 1]
 
-                    # Show current habit info
-                    self.view.show_current_habit_info(selected_habit.name, selected_habit.periodicity)
+                    # Show current habit info including comments
+                    self.view.show_current_habit_info(
+                        selected_habit.name,
+                        selected_habit.periodicity,
+                        selected_habit.comments
+                    )
 
                     # Get new values
                     new_name = self.view.get_new_name(selected_habit.name)
                     new_periodicity = self.view.get_new_periodicity(selected_habit.periodicity)
+                    new_comments = self.view.get_new_comments(selected_habit.comments)
 
                     # Keep current values if the user pressed Enter
                     if not new_name:
                         new_name = selected_habit.name
                     if not new_periodicity:
                         new_periodicity = selected_habit.periodicity
+                    if new_comments is None:  # User skipped
+                        new_comments = selected_habit.comments
 
                     # Update habit
                     success, message = self.service.update_habit(
                         selected_habit.name,
                         new_name,
-                        new_periodicity
+                        new_periodicity,
+                        new_comments
                     )
 
                     if success:
@@ -144,13 +163,14 @@ class HabitController:
                     )
                     self.view.show_retry_message()
             except ValueError:
-                self.view.show_error("Invalid input.  Please enter a number.")
+                self.view.show_error("Invalid input. Please enter a number.")
                 self.view.show_retry_message()
 
     def list_all_habits(self):
-        """Display all habits."""
+        """Display all habits with icon, name, periodicity, and comments."""
         habits = self.service.get_all_habits()
-        habit_tuples = [(h.name, h.periodicity) for h in habits]
+        # Convert to tuples with comments: (name, periodicity, comments)
+        habit_tuples = [(h.name, h.periodicity, h.comments) for h in habits]
         self.view.show_habits_list(habit_tuples)
 
     def list_habits_by_periodicity(self):

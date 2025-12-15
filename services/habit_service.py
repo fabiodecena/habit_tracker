@@ -22,16 +22,17 @@ class HabitService:
         """
         self.repository = HabitRepository(db)
 
-    def create_habit(self, name: str, periodicity:  str) -> Tuple[bool, str]:
+    def create_habit(self, name: str, periodicity: str, comments: str = "") -> Tuple[bool, str]:
         """
         Creates a new habit with validation.
 
         Args:
             name: Habit name
             periodicity: 'daily' or 'weekly'
+            comments: Optional description/comments
 
         Returns:
-            Tuple of (success:  bool, message: str)
+            Tuple of (success:   bool, message: str)
         """
         # Validation
         if not name or not name.strip():
@@ -46,7 +47,7 @@ class HabitService:
             return False, f"Habit '{name}' already exists"
 
         # Create and save
-        habit = Habit(name=name. strip(), periodicity=periodicity)
+        habit = Habit(name=name.strip(), periodicity=periodicity, comments=comments.strip())
         success = self.repository.save(habit)
 
         if success:

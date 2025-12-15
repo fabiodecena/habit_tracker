@@ -1,16 +1,17 @@
 """
 Console View - Handles all console output and user input
 """
-from rich.console import Console
-from rich.panel import Panel
-from rich.text import Text
-from rich.align import Align
-from rich.console import Group
-from rich.rule import Rule
-from rich import box
 from typing import List, Tuple
+
+from rich import box
+from rich.align import Align
+from rich.console import Console
+from rich.console import Group
+from rich.panel import Panel
+from rich.rule import Rule
+from rich.text import Text
+
 from views.formatters import (
-    create_habits_table,
     create_menu_table,
     get_periodicity_icon
 )
@@ -83,6 +84,15 @@ class ConsoleView:
             User's input as string
         """
         return self.console.input(prompt)
+
+    def get_habit_comments(self) -> str:
+        """
+        Gets habit description/comments from the user.
+
+        Returns:
+            User's comments as string
+        """
+        return self.console.input("Enter a short description (press Enter to skip): ").strip()
 
     def get_completion_notes(self) -> str:
         """
@@ -184,20 +194,53 @@ class ConsoleView:
 
     # ============ Habit Lists ============
 
-    def show_habits_list(self, habits: List[Tuple[str, str]]):
+    def show_habits_list(self, habits: List[Tuple[str, str, str]]):
         """
-        Displays a list of all habits in a table.
+        Displays a list of all habits in a table with icon, name, periodicity, and comments.
 
         Args:
-            habits: List of tuples (name, periodicity)
+            habits: List of tuples (name, periodicity, comments)
         """
-        self.show_header("📋 [bold blue]Currently tracked habits:[/bold blue]\n")
+        from rich.table import Table
+        from rich import box
+        from views.formatters import get_periodicity_icon
+
+        self.show_header("📋 [bold blue]Currently tracked habits:[/bold blue]")
+        self.console.print()
 
         if habits:
-            table = create_habits_table(habits)
+            table = Table(
+                show_header=True,
+                header_style="bold magenta",
+                box=box.ROUNDED,
+                padding=(0, 2),
+                expand=True
+            )
+
+            # Column definitions
+            table.add_column("Icon", width=3, justify="center")
+            table.add_column("Habit Name", style="cyan bold", min_width=20, justify="center")
+            table.add_column("Periodicity", style="yellow", width=12, justify="center")
+            table.add_column("Description", style="dim italic", no_wrap=False, overflow="fold")
+
+            for habit in habits:
+                icon = get_periodicity_icon(habit[1])
+                name = habit[0]
+                periodicity = habit[1].capitalize()
+                comments = habit[2] if habit[2] else "-"
+
+                table.add_row(
+                    icon,
+                    Align.left(name),  # keep cells left
+                    Align.left(periodicity),  # centered is fine here
+                    Align.left(comments),  # keep cells left
+                )
+
             self.console.print(table)
         else:
             self.console.print("  No habits found.", style="dim")
+
+        self.console.print()
 
     def show_habits_numbered_list(
             self,
@@ -435,12 +478,14 @@ class ConsoleView:
 
     # ============ Edit Helpers ============
 
-    def show_current_habit_info(self, name: str, periodicity: str):
+    def show_current_habit_info(self, name: str, periodicity: str, comments: str = ""):
         """Shows current habit information during edit."""
         self.console.print(
             f"\n[bold cyan]Editing:[/bold cyan] [green]{name}[/green] "
             f"([yellow]{periodicity}[/yellow])"
         )
+        if comments:
+            self.console.print(f"[bold cyan]Current description:[/bold cyan] [italic]{comments}[/italic]")
         self.console.print("\n[dim]Press Enter to keep current value[/dim]")
 
     def get_new_name(self, current_name: str) -> str:
@@ -454,3 +499,25 @@ class ConsoleView:
         return self.console.input(
             f"New periodicity (current: {current_periodicity}): "
         ).lower().strip()
+
+    def get_new_comments(self, current_comments: str) -> str | None:
+        """
+        Gets new comments during edit.
+
+        Args:
+            current_comments: Current comments
+
+        Returns:
+            New comments or None if the user wants to keep current
+        """
+        display_comments = current_comments if current_comments else "(no description)"
+        user_input = self.console.input(
+            f"New description (current: {display_comments}): "
+        ).strip()
+
+        # Return None if the user pressed Enter (keep current)
+        # Return empty string if the user wants to clear
+        # Return new value if the user entered something
+        if user_input == "":
+            return None  # Keep current
+        return user_input
