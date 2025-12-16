@@ -42,18 +42,20 @@ class MenuController:
             elif choice == '4':
                 self.habit_controller.edit_habit()
             elif choice == '5':
-                self.habit_controller.list_all_habits()
-            elif choice == '6':
+                self.habit_controller.list_active_habits()  # CHANGED
+            elif choice == '6':  # NEW
+                self.habit_controller.list_all_habits_including_inactive()
+            elif choice == '7':  # Changed from 6
                 self.habit_controller.list_habits_by_periodicity()
-            elif choice == '7':
+            elif choice == '8':  # Changed from 7
                 self.analytics_controller.show_longest_streak_all()
-            elif choice == '8':
+            elif choice == '9':  # Changed from 8
                 self.analytics_controller.show_longest_streak_specific()
-            elif choice == '9':
+            elif choice == '10':  # Changed from 9
                 self.completion_controller.show_completion_table()
-            elif choice == '10':  # NEW
+            elif choice == '11':  # Changed from 10
                 self.completion_controller.edit_completion_notes()
-            elif choice == '11':  # Changed from '10'
+            elif choice == '12':  # Changed from 11
                 self.view.show_goodbye()
                 break
             else:

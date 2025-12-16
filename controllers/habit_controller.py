@@ -47,11 +47,11 @@ class HabitController:
             self.view.show_error(message)
 
     def delete_habit(self):
-        """Interactive habit deletion with numbered selection."""
+        """Interactive habit deletion with soft/hard delete choice."""
         while True:
             self.view.show_header("🗑️  [bold red]Delete a habit[/bold red]")
 
-            habits = self.service.get_all_habits()
+            habits = self.service.get_all_habits(include_inactive=False)
             if not habits:
                 self.view.show_no_habits_found()
                 return
@@ -73,19 +73,35 @@ class HabitController:
                     selected_habit = habits[choice_num - 1]
                     name = selected_habit.name
 
-                    # Add confirmation to prevent accidental deletion
-                    confirm = self.view.get_confirmation(
-                        f"\n⚠️  Are you sure you want to delete '{name}'?  (y/n): "
-                    )
+                    # Ask for a deletion type
+                    self.view.console.print()
+                    deletion_type = self.view.get_deletion_type()
 
-                    if confirm.lower() != 'y':
-                        self.view.console.print("\n❌ Deletion cancelled.", style="yellow")
+                    if deletion_type == 'cancel':
+                        self.view.console.print("❌ Deletion cancelled.", style="yellow")
                         return
 
-                    success, message = self.service.delete_habit(name)
+                    # Confirm deletion
+                    if deletion_type == 'soft':
+                        confirm_message = f"⚠️  Archive '{name}'? (You can restore it later) (y/n): "
+                    else:
+                        confirm_message = f"⚠️  PERMANENTLY delete '{name}' and all its data? This cannot be undone!  (y/n): "
+
+                    confirm = self.view.get_confirmation(confirm_message)
+
+                    if confirm.lower() != 'y':
+                        self.view.console.print("❌ Deletion cancelled.", style="yellow")
+                        return
+
+                    # Perform deletion
+                    soft_delete = (deletion_type == 'soft')
+                    success, message = self.service.delete_habit(name, soft_delete=soft_delete)
 
                     if success:
-                        self.view.show_habit_deleted(name)
+                        if soft_delete:
+                            self.view.show_habit_archived(name)
+                        else:
+                            self.view.show_habit_deleted(name)
                     else:
                         self.view.show_error(message)
                     return
@@ -166,12 +182,28 @@ class HabitController:
                 self.view.show_error("Invalid input. Please enter a number.")
                 self.view.show_retry_message()
 
-    def list_all_habits(self):
-        """Display all habits with icon, name, periodicity, and description."""
-        habits = self.service.get_all_habits()
-        # Convert to tuples with description: (name, periodicity, description)
-        habit_tuples = [(h.name, h.periodicity, h.description) for h in habits]
-        self.view.show_habits_list(habit_tuples)
+    def list_all_habits(self, include_inactive=False):
+        """
+        Display all habits.
+
+        Args:
+            include_inactive:  If True, shows inactive habits as well
+        """
+        habits = self.service.get_all_habits(include_inactive=include_inactive)
+        habit_tuples = [(h.name, h.periodicity, h.description, h.is_active) for h in habits]
+
+        if include_inactive:
+            self.view.show_all_habits_list(habit_tuples)
+        else:
+            self.view.show_habits_list(habit_tuples)
+
+    def list_active_habits(self):
+        """Display only active habits."""
+        self.list_all_habits(include_inactive=False)
+
+    def list_all_habits_including_inactive(self):
+        """Display all habits including inactive."""
+        self.list_all_habits(include_inactive=True)
 
     def list_habits_by_periodicity(self):
         """Display habits filtered by periodicity with menu selection."""

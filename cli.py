@@ -11,7 +11,6 @@ from services.tracker_service import TrackerService
 from utils.seed_data import seed_predefined_data
 from views.console_view import ConsoleView
 
-
 @click.group(invoke_without_command=True)
 @click.pass_context
 def cli(ctx):
@@ -27,7 +26,6 @@ def cli(ctx):
     if ctx.invoked_subcommand is None:
         menu = MenuController(db)
         menu.run()
-
 
 # ============ Direct CLI Commands ============
 
@@ -51,23 +49,40 @@ def create(ctx, name, periodicity, description):
     else:
         view.show_error(message)
 
-
 @cli.command()
 @click.argument('name')
+@click.option('--hard', is_flag=True, help='Permanently delete (default is soft delete)')
 @click.pass_context
-def delete(ctx, name):
-    """🗑️ Delete a habit"""
+def delete(ctx, name, hard):
+    """❌ Delete a habit"""
     db = ctx.obj['db']
     view = ConsoleView()
     service = HabitService(db)
 
-    success, message = service.delete_habit(name)
+    soft_delete = not hard
+
+    if hard:
+        confirm = view.get_confirmation(
+            f"⚠️  PERMANENTLY delete '{name}' and all its data? This cannot be undone! (y/n): "
+        )
+    else:
+        confirm = view.get_confirmation(
+            f"⚠️  Archive '{name}'? (You can restore it later) (y/n): "
+        )
+
+    if confirm.lower() != 'y':
+        view.console.print("❌ Deletion cancelled.", style="yellow")
+        return
+
+    success, message = service.delete_habit(name, soft_delete=soft_delete)
 
     if success:
-        view.show_habit_deleted(name)
+        if soft_delete:
+            view.show_habit_archived(name)
+        else:
+            view.show_habit_deleted(name)
     else:
         view.show_error(message)
-
 
 @cli.command()
 @click.argument('name')
@@ -85,7 +100,6 @@ def checkoff(ctx, name, notes):
         view. show_habit_checked_off(name)
     else:
         view.show_error(message)
-
 
 @cli.command()
 @click.argument('old_name')
@@ -123,16 +137,21 @@ def edit(ctx, old_name, new_name, periodicity, description):
 
 
 @cli.command()
+@click.option('--all', 'show_all', is_flag=True, help='Show all habits including inactive')
 @click.pass_context
-def habit_list(ctx):
+def habit_list(ctx, show_all):
     """📋 List all habits"""
     db = ctx.obj['db']
     view = ConsoleView()
     service = HabitService(db)
 
-    habits = service.get_all_habits()
-    habit_tuples = [(h.name, h.periodicity, h.description) for h in habits]
-    view.show_habits_list(habit_tuples)
+    habits = service.get_all_habits(include_inactive=show_all)
+    habit_tuples = [(h.name, h.periodicity, h.description, h.is_active) for h in habits]
+
+    if show_all:
+        view.show_all_habits_list(habit_tuples)
+    else:
+        view.show_habits_list(habit_tuples)
 
 
 @cli.command()
@@ -148,7 +167,6 @@ def habits_filter(ctx, periodicity):
     habit_tuples = [(h. name, h.periodicity) for h in habits]
     view. show_filtered_habits(periodicity, habit_tuples)
 
-
 @cli.command()
 @click.pass_context
 def champion(ctx):
@@ -159,7 +177,6 @@ def champion(ctx):
 
     habit_name, habit_streak = service.get_longest_streak_all_habits()
     view.show_longest_streak_all(habit_name, habit_streak)
-
 
 @cli.command()
 @click.argument('name')

@@ -55,7 +55,7 @@ class ConsoleView:
     def get_menu_choice(self) -> str:
         """Gets user's menu choice."""
         return self.console.input(
-            "[bold yellow]Enter your choice (1-11): [/bold yellow]"
+            "[bold yellow]Enter your choice (1-12): [/bold yellow]"  # Changed from 1-11
         )
 
     def get_habit_name(self, prompt: str = "Enter habit name: ") -> str:
@@ -103,6 +103,43 @@ class ConsoleView:
         """
         return self.console.input("Enter notes (press Enter to skip): ").strip()
 
+    def get_deletion_type(self) -> str:
+        """
+        Asks user to choose a deletion type.
+
+        Returns:
+            'soft', 'hard', or 'cancel'
+        """
+        from rich.panel import Panel
+        from rich import box
+
+        deletion_menu = """[yellow]1.[/yellow] [cyan]Soft Delete (Archive)[/cyan] - Hide habit but keep all data
+    [yellow]2.[/yellow] [red]Hard Delete (Permanent)[/red] - Delete habit and all completion history
+    [yellow]q.[/yellow] [dim]Cancel[/dim]"""
+
+        panel = Panel(
+            deletion_menu,
+            title="[bold magenta]Choose Deletion Type[/bold magenta]",
+            border_style="yellow",
+            box=box.ROUNDED,
+            padding=(1, 2)
+        )
+
+        self.console.print(panel)
+
+        while True:
+            choice = self.console.input(
+                "\n[bold yellow]Enter your choice (1-2, or 'q' to cancel): [/bold yellow]").strip()
+
+            if choice == '1':
+                return 'soft'
+            elif choice == '2':
+                return 'hard'
+            elif choice.lower() == 'q':
+                return 'cancel'
+            else:
+                self.console.print("[red]Invalid choice. Please enter 1, 2, or 'q'.[/red]")
+
     # ============ Success Messages ============
 
     def show_habit_created(self, name: str):
@@ -112,12 +149,29 @@ class ConsoleView:
             style="green"
         )
 
+    def show_habit_archived(self, name: str):
+        """
+        Shows habit archived confirmation.
+
+        Args:
+            name: Habit name
+        """
+        self.console.print()
+        self.console.print(f"📦 [yellow]Habit '{name}' archived successfully![/yellow]")
+        self.console.print("[dim]The habit is now hidden but all data is preserved.[/dim]")
+        self.console.print()
+
     def show_habit_deleted(self, name: str):
-        """Shows a message for habit deletion."""
-        self.console.print(
-            f"🗑️  Habit '[bold]{name}[/bold]' deleted.",
-            style="yellow"
-        )
+        """
+        Shows habit deleted confirmation.
+
+        Args:
+            name: Habit name
+        """
+        self.console.print()
+        self.console.print(f"🗑️  [red bold]Habit '{name}' permanently deleted![/red bold]")
+        self.console.print("[dim]All completion history has been removed.[/dim]")
+        self.console.print()
 
     def show_habit_checked_off(self, name: str):
         """Shows a success message for check-off."""
@@ -194,18 +248,68 @@ class ConsoleView:
 
     # ============ Habit Lists ============
 
-    def show_habits_list(self, habits: List[Tuple[str, str, str]]):
+    def show_habits_list(self, habits: List[Tuple[str, str, str, bool]]):
         """
-        Displays a list of all habits in a table with icon, name, periodicity, and description.
+        Displays a list of active habits only.
 
         Args:
-            habits: List of tuples (name, periodicity, description)
+            habits: List of tuples (name, periodicity, comments, is_active)
         """
         from rich.table import Table
         from rich import box
         from views.formatters import get_periodicity_icon
 
         self.show_header("📋 [bold blue]Currently tracked habits:[/bold blue]")
+
+        # Add a blank line for spacing
+        self.console.print()
+
+        # Filter only active habits
+        active_habits = [h for h in habits if h[3]]  # h[3] is is_active
+
+        if active_habits:
+            table = Table(
+                show_header=True,
+                header_style="bold magenta",
+                box=box.ROUNDED,
+                padding=(0, 2),
+                expand=False
+            )
+
+            # Column definitions
+            table.add_column("", width=3, justify="center")  # Icon
+            table.add_column("Habit Name", style="cyan bold", min_width=20, justify="center")
+            table.add_column("Periodicity", style="yellow", width=12, justify="center", no_wrap=True)
+            table.add_column("Description", style="dim italic", no_wrap=True, justify="center")
+
+            for habit in active_habits:
+                icon = get_periodicity_icon(habit[1])
+                name = habit[0]
+                periodicity = habit[1].capitalize()
+                comments = habit[2] if habit[2] else "-"
+
+                table.add_row(icon, name, periodicity, comments)
+
+            self.console.print(table)
+        else:
+            self.console.print("  No active habits found.", style="dim")
+
+        self.console.print()
+
+    def show_all_habits_list(self, habits: List[Tuple[str, str, str, bool]]):
+        """
+        Displays a list of all habits, including inactive ones.
+
+        Args:
+            habits: List of tuples (name, periodicity, comments, is_active)
+        """
+        from rich.table import Table
+        from rich import box
+        from views.formatters import get_periodicity_icon
+
+        self.show_header("📚 [bold blue]All habits (including inactive):[/bold blue]")
+
+        # Add a blank line for spacing
         self.console.print()
 
         if habits:
@@ -214,27 +318,35 @@ class ConsoleView:
                 header_style="bold magenta",
                 box=box.ROUNDED,
                 padding=(0, 2),
-                expand=True
+                expand=False
             )
 
             # Column definitions
-            table.add_column("Icon", width=3, justify="center")
+            table.add_column("", width=3, justify="center")  # Icon
             table.add_column("Habit Name", style="cyan bold", min_width=20, justify="center")
-            table.add_column("Periodicity", style="yellow", width=12, justify="center")
-            table.add_column("Description", style="dim italic", no_wrap=False, overflow="fold")
+            table.add_column("Periodicity", style="yellow", width=12, justify="center", no_wrap=True)
+            table.add_column("Status", style="white", width=10, justify="center")
+            table.add_column("Description", style="dim italic", no_wrap=True, justify="center")
 
             for habit in habits:
                 icon = get_periodicity_icon(habit[1])
                 name = habit[0]
                 periodicity = habit[1].capitalize()
-                description = habit[2] if habit[2] else "-"
+                is_active = habit[3]
+                comments = habit[2] if habit[2] else "-"
 
-                table.add_row(
-                    icon,
-                    Align.left(name),  # keep cells left
-                    Align.left(periodicity),  # centered is fine here
-                    Align.left(description),  # keep cells left
-                )
+                # Status indicator
+                if is_active:
+                    status = "[green]Active[/green]"
+                    name_style = f"[cyan]{name}[/cyan]"
+                else:
+                    status = "[red]Archived[/red]"
+                    name_style = f"[dim strikethrough]{name}[/dim strikethrough]"
+                    icon = f"[dim]{icon}[/dim]"
+                    periodicity = f"[dim]{periodicity}[/dim]"
+                    comments = f"[dim]{comments}[/dim]"
+
+                table.add_row(icon, name_style, periodicity, status, comments)
 
             self.console.print(table)
         else:
