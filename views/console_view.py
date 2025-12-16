@@ -85,12 +85,12 @@ class ConsoleView:
         """
         return self.console.input(prompt)
 
-    def get_habit_comments(self) -> str:
+    def get_habit_description(self) -> str:
         """
-        Gets habit description/comments from the user.
+        Gets habit description/description from the user.
 
         Returns:
-            User's comments as string
+            User's description as string
         """
         return self.console.input("Enter a short description (press Enter to skip): ").strip()
 
@@ -196,10 +196,10 @@ class ConsoleView:
 
     def show_habits_list(self, habits: List[Tuple[str, str, str]]):
         """
-        Displays a list of all habits in a table with icon, name, periodicity, and comments.
+        Displays a list of all habits in a table with icon, name, periodicity, and description.
 
         Args:
-            habits: List of tuples (name, periodicity, comments)
+            habits: List of tuples (name, periodicity, description)
         """
         from rich.table import Table
         from rich import box
@@ -227,13 +227,13 @@ class ConsoleView:
                 icon = get_periodicity_icon(habit[1])
                 name = habit[0]
                 periodicity = habit[1].capitalize()
-                comments = habit[2] if habit[2] else "-"
+                description = habit[2] if habit[2] else "-"
 
                 table.add_row(
                     icon,
                     Align.left(name),  # keep cells left
                     Align.left(periodicity),  # centered is fine here
-                    Align.left(comments),  # keep cells left
+                    Align.left(description),  # keep cells left
                 )
 
             self.console.print(table)
@@ -433,8 +433,8 @@ class ConsoleView:
     [bold]Current Streak:[/bold] {habit_data['current_streak']}
     [bold]Longest Streak:[/bold] {habit_data['longest_streak']}"""
 
-        if habit_data['comments']:
-            stats += f"\n[bold]Comments:[/bold] {habit_data['comments']}"
+        if habit_data['description']:
+            stats += f"\n[bold]Description:[/bold] {habit_data['description']}"
 
         panel = Panel(
             stats,
@@ -478,14 +478,14 @@ class ConsoleView:
 
     # ============ Edit Helpers ============
 
-    def show_current_habit_info(self, name: str, periodicity: str, comments: str = ""):
+    def show_current_habit_info(self, name: str, periodicity: str, description: str = ""):
         """Shows current habit information during edit."""
         self.console.print(
             f"\n[bold cyan]Editing:[/bold cyan] [green]{name}[/green] "
             f"([yellow]{periodicity}[/yellow])"
         )
-        if comments:
-            self.console.print(f"[bold cyan]Current description:[/bold cyan] [italic]{comments}[/italic]")
+        if description:
+            self.console.print(f"[bold cyan]Current description:[/bold cyan] [italic]{description}[/italic]")
         self.console.print("\n[dim]Press Enter to keep current value[/dim]")
 
     def get_new_name(self, current_name: str) -> str:
@@ -500,19 +500,19 @@ class ConsoleView:
             f"New periodicity (current: {current_periodicity}): "
         ).lower().strip()
 
-    def get_new_comments(self, current_comments: str) -> str | None:
+    def get_new_description(self, current_description: str) -> str | None:
         """
-        Gets new comments during edit.
+        Gets a new description during edit.
 
         Args:
-            current_comments: Current comments
+            current_description: Current description
 
         Returns:
-            New comments or None if the user wants to keep current
+            New description or None if the user wants to keep current
         """
-        display_comments = current_comments if current_comments else "(no description)"
+        display_description = current_description if current_description else "(no description)"
         user_input = self.console.input(
-            f"New description (current: {display_comments}): "
+            f"New description (current: {display_description}): "
         ).strip()
 
         # Return None if the user pressed Enter (keep current)

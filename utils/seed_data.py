@@ -31,10 +31,10 @@ def seed_predefined_data(db):
     end_date = datetime.now()
     start_date = end_date - timedelta(weeks=Config.SEED_WEEKS)
 
-    # Seed habits with comments
-    for name, periodicity, comments in Config. SEED_HABITS:
-        # Create habit with comments
-        success, message = habit_service.create_habit(name, periodicity, comments)
+    # Seed habits with description
+    for name, periodicity, description in Config. SEED_HABITS:
+        # Create habit with description
+        success, message = habit_service.create_habit(name, periodicity, description)
 
         if not success:
             print(f"Warning: {message}")

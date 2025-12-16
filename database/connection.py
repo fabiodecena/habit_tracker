@@ -45,7 +45,7 @@ class Database:
                 periodicity TEXT NOT NULL,
                 created_at TEXT NOT NULL,
                 updated_at TEXT NOT NULL,
-                comments TEXT DEFAULT '',
+                description TEXT DEFAULT '',
                 is_active INTEGER DEFAULT 1
             )
         """)

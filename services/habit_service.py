@@ -22,14 +22,14 @@ class HabitService:
         """
         self.repository = HabitRepository(db)
 
-    def create_habit(self, name: str, periodicity: str, comments: str = "") -> Tuple[bool, str]:
+    def create_habit(self, name: str, periodicity: str, description: str = "") -> Tuple[bool, str]:
         """
         Creates a new habit with validation.
 
         Args:
             name: Habit name
             periodicity: 'daily' or 'weekly'
-            comments: Optional description/comments
+            description: Optional description/description
 
         Returns:
             Tuple of (success:   bool, message: str)
@@ -47,7 +47,7 @@ class HabitService:
             return False, f"Habit '{name}' already exists"
 
         # Create and save
-        habit = Habit(name=name.strip(), periodicity=periodicity, comments=comments.strip())
+        habit = Habit(name=name.strip(), periodicity=periodicity, description=description.strip())
         success = self.repository.save(habit)
 
         if success:
@@ -60,7 +60,7 @@ class HabitService:
         old_name: str,
         new_name: str,
         new_periodicity: str,
-        comments: str = None
+        description: str = None
     ) -> Tuple[bool, str]:
         """
         Updates an existing habit with validation.
@@ -69,7 +69,7 @@ class HabitService:
             old_name: Current habit name
             new_name: New habit name
             new_periodicity: New periodicity
-            comments: Optional comments to update
+            description: Optional description to update
 
         Returns:
             Tuple of (success: bool, message: str)
@@ -95,8 +95,8 @@ class HabitService:
         # Update the habit object
         old_habit.name = new_name.strip()
         old_habit.periodicity = new_periodicity
-        if comments is not None:
-            old_habit.comments = comments
+        if description is not None:
+            old_habit.description = description
 
         success = self.repository.update(old_habit)
 

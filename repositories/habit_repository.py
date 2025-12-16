@@ -37,7 +37,7 @@ class HabitRepository:
         try:
             cur.execute(
                 """
-                INSERT INTO habits (habit_id, name, periodicity, created_at, updated_at, comments, is_active)
+                INSERT INTO habits (habit_id, name, periodicity, created_at, updated_at, description, is_active)
                 VALUES (?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
@@ -46,7 +46,7 @@ class HabitRepository:
                     habit.periodicity,
                     habit.created_at.isoformat(),
                     habit.updated_at.isoformat(),
-                    habit.comments,
+                    habit.description,
                     1 if habit.is_active else 0
                 )
             )
@@ -75,7 +75,7 @@ class HabitRepository:
         cur = con.cursor()
 
         cur.execute("""
-            SELECT habit_id, name, periodicity, created_at, updated_at, comments, is_active
+            SELECT habit_id, name, periodicity, created_at, updated_at, description, is_active
             FROM habits
         """)
 
@@ -120,7 +120,7 @@ class HabitRepository:
         cur = con.cursor()
         cur.execute(
             """
-            SELECT habit_id, name, periodicity, created_at, updated_at, comments, is_active
+            SELECT habit_id, name, periodicity, created_at, updated_at, description, is_active
             FROM habits
             WHERE habit_id = ? 
             """,
@@ -145,7 +145,7 @@ class HabitRepository:
         cur = con.cursor()
         cur.execute(
             """
-            SELECT habit_id, name, periodicity, created_at, updated_at, comments, is_active
+            SELECT habit_id, name, periodicity, created_at, updated_at, description, is_active
             FROM habits
             WHERE name = ?  AND is_active = 1
             """,
@@ -173,7 +173,7 @@ class HabitRepository:
         if include_inactive:
             cur.execute(
                 """
-                SELECT habit_id, name, periodicity, created_at, updated_at, comments, is_active
+                SELECT habit_id, name, periodicity, created_at, updated_at, description, is_active
                 FROM habits
                 WHERE periodicity = ? 
                 ORDER BY created_at DESC
@@ -183,7 +183,7 @@ class HabitRepository:
         else:
             cur.execute(
                 """
-                SELECT habit_id, name, periodicity, created_at, updated_at, comments, is_active
+                SELECT habit_id, name, periodicity, created_at, updated_at, description, is_active
                 FROM habits
                 WHERE periodicity = ? AND is_active = 1
                 ORDER BY created_at DESC
@@ -214,14 +214,14 @@ class HabitRepository:
             cur.execute(
                 """
                 UPDATE habits
-                SET name = ?, periodicity = ?, updated_at = ?, comments = ?, is_active = ?
+                SET name = ?, periodicity = ?, updated_at = ?, description = ?, is_active = ?
                 WHERE habit_id = ?
                 """,
                 (
                     habit.name,
                     habit.periodicity,
                     habit.updated_at.isoformat(),
-                    habit.comments,
+                    habit.description,
                     1 if habit.is_active else 0,
                     habit.habit_id
                 )

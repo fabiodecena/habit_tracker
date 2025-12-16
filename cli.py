@@ -34,20 +34,20 @@ def cli(ctx):
 @cli.command()
 @click.argument('name')
 @click.argument('periodicity', type=click.Choice(['daily', 'weekly']))
-@click.option('--comments', default='', help='Description/comments for the habit')
+@click.option('--description', default='', help='Description/description for the habit')
 @click.pass_context
-def create(ctx, name, periodicity, comments):
+def create(ctx, name, periodicity, description):
     """✨ Create a new habit"""
     db = ctx.obj['db']
     view = ConsoleView()
     service = HabitService(db)
 
-    success, message = service.create_habit(name, periodicity, comments)
+    success, message = service.create_habit(name, periodicity, description)
 
     if success:
         view.show_habit_created(name)
-        if comments:
-            view.console.print(f"   💬 Description: [italic]{comments}[/italic]", style="dim cyan")
+        if description:
+            view.console.print(f"   💬 Description: [italic]{description}[/italic]", style="dim cyan")
     else:
         view.show_error(message)
 
@@ -91,10 +91,10 @@ def checkoff(ctx, name, notes):
 @click.argument('old_name')
 @click.option('--new-name', help='New name for the habit')
 @click.option('--periodicity', type=click.Choice(['daily', 'weekly']), help='New periodicity')
-@click.option('--comments', help='Comments about the habit')
+@click.option('--description', help='Description about the habit')
 @click.pass_context
-def edit(ctx, old_name, new_name, periodicity, comments):
-    """✏️ Edit a habit's name or periodicity"""
+def edit(ctx, old_name, new_name, periodicity, description):
+    """✏️ Edit a habit's name, periodicity or description"""
     db = ctx.obj['db']
     view = ConsoleView()
     habit_service = HabitService(db)
@@ -108,11 +108,11 @@ def edit(ctx, old_name, new_name, periodicity, comments):
     # Use existing values if not provided
     final_name = new_name if new_name else old_name
     final_periodicity = periodicity if periodicity else habit.periodicity
-    final_comments = comments if comments is not None else habit.comments
+    final_description = description if description is not None else habit.description
 
-    # Update comments on the habit object
-    if comments is not None:
-        habit.comments = final_comments
+    # Update description on the habit object
+    if description is not None:
+        habit.description = final_description
 
     success, message = habit_service.update_habit(old_name, final_name, final_periodicity)
 
@@ -131,7 +131,7 @@ def habit_list(ctx):
     service = HabitService(db)
 
     habits = service.get_all_habits()
-    habit_tuples = [(h.name, h.periodicity, h.comments) for h in habits]
+    habit_tuples = [(h.name, h.periodicity, h.description) for h in habits]
     view.show_habits_list(habit_tuples)
 
 

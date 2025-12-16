@@ -18,7 +18,7 @@ class Habit:
     habit_id: Optional[str] = None
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
-    comments: str = ""
+    description: str = ""
     is_active: bool = True
 
     def __post_init__(self):
@@ -40,7 +40,7 @@ class Habit:
             'periodicity': self.periodicity,
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None,
-            'comments': self.comments,
+            'description': self.description,
             'is_active': self.is_active
         }
 
@@ -53,7 +53,7 @@ class Habit:
             periodicity=data['periodicity'],
             created_at=datetime.fromisoformat(data['created_at']) if data.get('created_at') else None,
             updated_at=datetime.fromisoformat(data['updated_at']) if data.get('updated_at') else None,
-            comments=data.get('comments', ''),
+            description=data.get('description', ''),
             is_active=data.get('is_active', True)
         )
 
@@ -61,7 +61,7 @@ class Habit:
     def from_tuple(cls, data: tuple) -> 'Habit':
         """
         Create from a database tuple.
-        Expected format: (habit_id, name, periodicity, created_at, updated_at, comments, is_active)
+        Expected format: (habit_id, name, periodicity, created_at, updated_at, description, is_active)
         """
         return cls(
             habit_id=data[0] if len(data) > 0 else None,
@@ -69,7 +69,7 @@ class Habit:
             periodicity=data[2] if len(data) > 2 else "daily",
             created_at=datetime.fromisoformat(data[3]) if len(data) > 3 and data[3] else None,
             updated_at=datetime.fromisoformat(data[4]) if len(data) > 4 and data[4] else None,
-            comments=data[5] if len(data) > 5 else "",
+            description=data[5] if len(data) > 5 else "",
             is_active=bool(data[6]) if len(data) > 6 else True
         )
 
