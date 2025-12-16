@@ -363,7 +363,7 @@ class ConsoleView:
             header_style="bold magenta",
             box=box.ROUNDED,
             padding=(0, 1),
-            expand=False
+            expand=True
         )
 
         table.add_column("#", style="bold yellow", width=3, justify="right")
@@ -373,7 +373,6 @@ class ConsoleView:
         table.add_column("Last Done", style="green", width=10)
         table.add_column("Streak", style="bold yellow", width=6, justify="right")
         table.add_column("Total", style="blue", width=5, justify="right")
-        table.add_column("Notes", style="dim italic", max_width=30)
 
         for idx, habit_data in enumerate(summary_data, 1):
             created_date = habit_data['created_at'].strftime('%Y-%m-%d')
@@ -387,21 +386,17 @@ class ConsoleView:
             streak = str(habit_data['current_streak'])
             total = str(habit_data['total_completions'])
 
-            # Truncate notes if too long
-            notes = habit_data['notes'][: 27] + "..." if len(habit_data['notes']) > 30 else habit_data['notes']
-
             # Capitalize periodicity for display
-            periodicity_display = habit_data['periodicity'].capitalize()  # CHANGED
+            periodicity_display = habit_data['periodicity'].capitalize()
 
             table.add_row(
                 str(idx),
                 habit_data['name'],
-                periodicity_display,  # CHANGED
+                periodicity_display,
                 created_date,
                 last_done,
                 streak,
-                total,
-                notes
+                total
             )
 
         self.console.print(table)
@@ -429,12 +424,10 @@ class ConsoleView:
 
         # Summary stats
         stats = f"""[bold]Created:[/bold] {habit_data['created_at'].strftime('%Y-%m-%d %H:%M')}
-    [bold]Total Completions:[/bold] {habit_data['total_completions']}
-    [bold]Current Streak:[/bold] {habit_data['current_streak']}
-    [bold]Longest Streak:[/bold] {habit_data['longest_streak']}"""
-
-        if habit_data['description']:
-            stats += f"\n[bold]Description:[/bold] {habit_data['description']}"
+                [bold]Total Completions:[/bold] {habit_data['total_completions']}
+                [bold]Current Streak:[/bold] {habit_data['current_streak']}
+                [bold]Longest Streak:[/bold] {habit_data['longest_streak']}
+                [bold]Description:[/bold] {habit_data['description']}"""
 
         panel = Panel(
             stats,
