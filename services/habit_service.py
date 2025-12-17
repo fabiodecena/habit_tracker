@@ -29,7 +29,7 @@ class HabitService:
         Args:
             name: Habit name
             periodicity: 'daily' or 'weekly'
-            description: Optional new_description/new_description
+            description: Optional description
 
         Returns:
             Tuple of (success:   bool, message: str)
@@ -61,7 +61,7 @@ class HabitService:
         new_name: str,
         new_periodicity: str,
         new_status: bool = True,
-        new_description: str = None
+        new_description: str = ""
     ) -> Tuple[bool, str]:
         """
         Updates an existing habit with validation.

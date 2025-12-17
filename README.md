@@ -327,8 +327,8 @@ Enter your choice (1-11): _
 # Simple creation
 python cli.py create "Exercise" daily
 
-# With new_description
-python cli. py create "Morning Run" daily --new_description "5km jog in the park to start the day fresh"
+# With description
+python cli. py create "Morning Run" daily --description "5km jog in the park to start the day fresh"
 ```
 
 #### Check Off a Habit
@@ -369,7 +369,7 @@ python cli.py filter weekly
 #### Edit a Habit
 ```bash
 # Interactive edit (recommended)
-# Option 4 in menu → Select habit number → Edit name/periodicity/new_description
+# Option 4 in menu → Select habit number → Edit name/periodicity/description
 
 # CLI edit
 python cli.py edit "Exercise" --new-name "Workout" --periodicity weekly
@@ -811,8 +811,8 @@ def calculate_longest_streak(self, habit_name: str) -> int:
 # 1. Start the application (auto-seeds with 5 sample habits)
 python main.py
 
-# 2. Create a new habit with new_description
-python cli.py create "Morning Run" daily --new_description "5km jog in the park to start the day fresh"
+# 2. Create a new habit with description
+python cli.py create "Morning Run" daily --description "5km jog in the park to start the day fresh"
 
 # 3. Check it off with notes
 python cli.py checkoff "Morning Run" --notes "Great run! 28 minutes, felt energized"
@@ -837,7 +837,7 @@ python main.py
 # 2. Option 1: Create habit
 #    → Enter name:  "Yoga"
 #    → Enter periodicity: "daily"
-#    → Add new_description: "30 minutes morning yoga routine"
+#    → Add description: "30 minutes morning yoga routine"
 
 # 3. Option 3: Check-off habit
 #    → Select:  1 (Yoga)
@@ -919,7 +919,7 @@ CREATE TABLE habits (
     periodicity TEXT NOT NULL,         -- 'daily' or 'weekly'
     created_at TEXT NOT NULL,          -- ISO format datetime
     updated_at TEXT NOT NULL,          -- ISO format datetime
-    description TEXT DEFAULT '',       -- Habit new_description
+    description TEXT DEFAULT '',       -- Habit description
     is_active INTEGER DEFAULT 1        -- Soft delete flag (1=active, 0=inactive)
 );
 ```
@@ -956,7 +956,7 @@ class Config:
     SEED_WEEKS = 4
     SEED_SUCCESS_RATE = 0.8  # 80% completion rate for seed data
     
-    # Predefined habits for seeding (name, periodicity, new_description)
+    # Predefined habits for seeding (name, periodicity, description)
     SEED_HABITS = [
         ("Drink Water", "daily", "Stay hydrated throughout the day - 8 glasses minimum"),
         ("Read Book", "daily", "Read at least 20 pages of a book before bed"),
@@ -996,7 +996,7 @@ class Config:
 
 **1. User runs command:**
 ```bash
-python cli.py create "Yoga" daily --new_description "30 minutes morning routine"
+python cli.py create "Yoga" daily --description "30 minutes morning routine"
 ```
 
 **2. CLI entry point (`cli.py`):**
@@ -1027,7 +1027,7 @@ def create_habit(self, name, periodicity, description=""):
     if self.repository.find_by_name(name):
         return False, "Already exists"
 
-    # Create model with new_description
+    # Create model with description
     habit = Habit(name=name, periodicity=periodicity, description=description)
 
     # Save via repository

@@ -87,12 +87,12 @@ class ConsoleView:
 
     def get_habit_description(self) -> str:
         """
-        Gets habit new_description/new_description from the user.
+        Gets habit description from the user.
 
         Returns:
-            User's new_description as string
+            User's description as string
         """
-        return self.console.input("Enter a short new_description (press Enter to skip): ").strip()
+        return self.console.input("Enter a short description (press Enter to skip): ").strip()
 
     def get_completion_notes(self) -> str:
         """
@@ -554,7 +554,7 @@ class ConsoleView:
                 [bold]Total Completions:[/bold] {habit_data['total_completions']}
                 [bold]Current Streak:[/bold] {habit_data['current_streak']}
                 [bold]Longest Streak:[/bold] {habit_data['longest_streak']}
-                [bold]Description:[/bold] {habit_data['new_description']}"""
+                [bold]Description:[/bold] {habit_data['description']}"""
 
         panel = Panel(
             stats,
@@ -676,17 +676,17 @@ class ConsoleView:
 
     def get_new_description(self, current_description: str) -> str | None:
         """
-        Gets a new new_description during edit.
+        Gets a new description during edit.
 
         Args:
-            current_description: Current new_description
+            current_description: Current description
 
         Returns:
-            New new_description or None if the user wants to keep current
+            New description or None if the user wants to keep current
         """
-        display_description = current_description if current_description else "(no new_description)"
+        display_description = current_description if current_description else "(no description)"
         user_input = self.console.input(
-            f"New new_description (current: {display_description}): "
+            f"New description (current: {display_description}): "
         ).strip()
 
         # Return None if the user pressed Enter (keep current)

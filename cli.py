@@ -32,7 +32,7 @@ def cli(ctx):
 @cli.command()
 @click.argument('name')
 @click.argument('periodicity', type=click.Choice(['daily', 'weekly']))
-@click.option('--new_description', default='', help='Description/new_description for the habit')
+@click.option('--description', default='', help='Description for the habit')
 @click.pass_context
 def create(ctx, name, periodicity, description):
     """✨ Create a new habit"""
@@ -105,10 +105,10 @@ def checkoff(ctx, name, notes):
 @click.argument('old_name')
 @click.option('--new-name', help='New name for the habit')
 @click.option('--periodicity', type=click.Choice(['daily', 'weekly']), help='New periodicity')
-@click.option('--new_description', help='Description about the habit')
+@click.option('--description', help='Description about the habit')
 @click.pass_context
 def edit(ctx, old_name, new_name, periodicity, status, description):
-    """✏️ Edit a habit's name, periodicity or new_description"""
+    """✏️ Edit a habit's name, periodicity or description"""
     db = ctx.obj['db']
     view = ConsoleView()
     habit_service = HabitService(db)
@@ -125,7 +125,7 @@ def edit(ctx, old_name, new_name, periodicity, status, description):
     final_status = status if status is not None else habit.is_active
     final_description = description if description is not None else habit.description
 
-    # Update new_description on the habit object
+    # Update description on the habit object
     if description is not None:
         habit.description = final_description
 

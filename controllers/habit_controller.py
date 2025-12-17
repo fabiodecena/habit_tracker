@@ -22,15 +22,15 @@ class HabitController:
         self.service = HabitService(db)
 
     def create_habit(self):
-        """Interactive habit creation with optional new_description."""
+        """Interactive habit creation with optional description."""
         self.view.show_header("✨ [bold cyan]Create a new habit[/bold cyan]")
 
         name = self.view.get_habit_name()
         periodicity = self.view.get_periodicity()
 
-        # Ask if the user wants to add a new_description
+        # Ask if the user wants to add a description
         add_description = self.view.get_confirmation(
-            "\nDo you want to add a new_description/comment for this habit?  (y/n): "
+            "\nDo you want to add a description for this habit?  (y/n): "
         )
 
         description = ""

@@ -31,44 +31,48 @@ def seed_predefined_data(db):
     habit_service = HabitService(db)
     tracker_service = TrackerService(db)
 
-    # Calculate date range: exactly 4 weeks from today backward
+    # Calculate date range:   exactly 4 weeks (28 days) from today backward
     end_date = datetime.now()
-    start_date = end_date - timedelta(weeks=4)
+    start_date = end_date - timedelta(days=27)  # 27 days back + today = 28 days
 
-    # Define predefined habits with descriptions and status
-    # Format: (name, periodicity, description, is_active)
+    # Define predefined habits with descriptions and INTENDED status
+    # Format: (name, periodicity, description, should_be_inactive)
     predefined_habits = [
-        ("Read Journal", "daily", "Read a journal (20-35 minutes)", True),
-        ("Skin Care", "daily", "Complete your skincare routine", False),  # Inactive/Archived
-        ("Play Music", "daily", "Practice an instrument for at least 15–30 minutes", True),
-        ("Finance Check", "weekly", "Review spending and update your budget/accounts", True),
-        ("Water Plants", "weekly", "Water plants and check soil moisture/leaves", True)
+        ("Read Journal", "daily", "Read a journal (20-35 minutes)", False),
+        ("Skin Care", "daily", "Complete your skincare routine", True),  # Will be inactive AFTER seeding
+        ("Play Music", "daily", "Practice an instrument for at least 15–30 minutes", False),
+        ("Finance Check", "weekly", "Review spending and update your budget/accounts", False),
+        ("Water Plants", "weekly", "Water plants and check soil moisture/leaves", False)
     ]
 
-    # Create habits with status
-    for name, periodicity, description, is_active in predefined_habits:
-        # Create habit (always active initially)
+    # Step 1: Create ALL habits as ACTIVE initially
+    habits_to_archive = []  # Track which ones to archive later
+    for name, periodicity, description, should_be_inactive in predefined_habits:
+        # Create habit as ACTIVE
         success, message = habit_service.create_habit(name, periodicity, description)
         if not success:
             print(f"Warning: {message}")
             continue
 
-        # If habit should be inactive, update its status
-        if not is_active:
-            habit = habit_service.get_habit_by_name(name)
-            if habit:
-                habit.is_active = False
-                habit_repo.update(habit)
+        # Remember which habits to archive AFTER seeding data
+        if should_be_inactive:
+            habits_to_archive.append(name)
 
-    # Generate predefined tracking data (test fixtures)
+    # Step 2: Generate predefined tracking data (ALL HABITS ARE ACTIVE)
     _seed_read_journal(tracker_service, start_date, end_date)
-    _seed_skin_care(tracker_service, start_date, end_date)  # Has data but is archived
+    _seed_skin_care(tracker_service, start_date, end_date)  # Will create data while active
     _seed_play_music(tracker_service, start_date, end_date)
     _seed_finance_check(tracker_service, start_date, end_date)
     _seed_water_plants(tracker_service, start_date, end_date)
 
-    view.show_seeding_complete()
+    # Step 3: NOW archive the habits that should be inactive
+    for habit_name in habits_to_archive:
+        habit = habit_service.get_habit_by_name(habit_name)
+        if habit:
+            habit.is_active = False
+            habit_repo.update(habit)
 
+    view.show_seeding_complete()
 
 def _seed_read_journal(tracker_service, start_date, end_date):
     """

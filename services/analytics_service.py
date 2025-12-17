@@ -231,7 +231,7 @@ class AnalyticsService:
             'name': habit.name,
             'periodicity': habit.periodicity,
             'created_at': habit.created_at,
-            'new_description': habit.description,
+            'description': habit.description,
             'completions': completions,
             'total_completions': len(completions),
             'longest_streak': self.calculate_longest_streak(habit_name),
