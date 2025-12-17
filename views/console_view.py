@@ -87,12 +87,12 @@ class ConsoleView:
 
     def get_habit_description(self) -> str:
         """
-        Gets habit description/description from the user.
+        Gets habit new_description/new_description from the user.
 
         Returns:
-            User's description as string
+            User's new_description as string
         """
-        return self.console.input("Enter a short description (press Enter to skip): ").strip()
+        return self.console.input("Enter a short new_description (press Enter to skip): ").strip()
 
     def get_completion_notes(self) -> str:
         """
@@ -184,14 +184,18 @@ class ConsoleView:
             self,
             old_name: str,
             new_name: str,
+            new_status: bool,
             new_periodicity: str
     ):
         """Shows a success message for habit update."""
-        self.console.print("✅ Habit updated successfully!", style="bold green")
+        status_text = "[green]Active[/green]" if new_status else "[red]Inactive[/red]"
         self.console.print(
-            f"   [cyan]{old_name}[/cyan] → [green]{new_name}[/green] "
-            f"([yellow]{new_periodicity}[/yellow])"
+            "✅ Habit updated successfully!", style="bold green"
         )
+        self.console.print(
+            f"   {old_name} → {new_name} ([yellow]{new_periodicity}[/yellow]) - {status_text}"
+        )
+        self.console.print()
 
     def show_seeding_start(self):
         """Shows a message when seeding starts."""
@@ -248,7 +252,7 @@ class ConsoleView:
 
     # ============ Habit Lists ============
 
-    def show_habits_list(self, habits: List[Tuple[str, str, str, bool]]):
+    def show_active_habits_list(self, habits: List[Tuple[str, str, str, bool]]):
         """
         Displays a list of active habits only.
 
@@ -354,25 +358,36 @@ class ConsoleView:
 
         self.console.print()
 
-    def show_habits_numbered_list(
+    def show_habits_numbered_list_with_status(
             self,
-            habits: List[Tuple[str, str]],
+            habits: List[Tuple[str, str, bool]],
             header: str = "[bold cyan]Current habits:[/bold cyan]"
     ):
         """
         Displays habits as a numbered list.
 
         Args:
-            habits: List of tuples (name, periodicity)
+            habits: List of tuples (name, periodicity, is_active)
             header: Header text
         """
         self.console.print(f"\n{header}\n")
 
         for i, habit in enumerate(habits, 1):
             icon = get_periodicity_icon(habit[1])
+            name = habit[0]
+            periodicity = habit[1]
+            is_active = habit[2]
+
+            # Status indicator
+            if is_active:
+                status = "[green]●[/green]"  # Green dot for active
+                name_style = f"{name}"
+            else:
+                status = "[red]○[/red]"  # Red hollow dot for inactive
+                name_style = f"[dim strikethrough]{name}[/dim strikethrough]"
+
             self.console.print(
-                f"  {i}. {icon} [cyan]{habit[0]}[/cyan] "
-                f"([yellow]{habit[1]}[/yellow])"
+                f"  {i}. {status} {icon} {name_style} ([yellow]{periodicity}[/yellow])"
             )
 
     def show_filtered_habits(self, periodicity: str, habits: List[Tuple[str, str]]):
@@ -539,7 +554,7 @@ class ConsoleView:
                 [bold]Total Completions:[/bold] {habit_data['total_completions']}
                 [bold]Current Streak:[/bold] {habit_data['current_streak']}
                 [bold]Longest Streak:[/bold] {habit_data['longest_streak']}
-                [bold]Description:[/bold] {habit_data['description']}"""
+                [bold]Description:[/bold] {habit_data['new_description']}"""
 
         panel = Panel(
             stats,
@@ -583,14 +598,24 @@ class ConsoleView:
 
     # ============ Edit Helpers ============
 
-    def show_current_habit_info(self, name: str, periodicity: str, description: str = ""):
-        """Shows current habit information during edit."""
+    def show_current_habit_info(self, name: str, periodicity: str, is_active: bool, description: str = ""):
+        """
+        Shows current habit information during edit.
+
+        Args:
+            name: Habit name
+            periodicity: Habit periodicity
+            is_active:  Habit status
+            description: Habit description
+        """
+        status_text = "[green]Active[/green]" if is_active else "[red]Inactive[/red]"
+
         self.console.print(
             f"\n[bold cyan]Editing:[/bold cyan] [green]{name}[/green] "
-            f"([yellow]{periodicity}[/yellow])"
+            f"([yellow]{periodicity}[/yellow]) - Status: {status_text}"
         )
         if description:
-            self.console.print(f"[bold cyan]Current description:[/bold cyan] [italic]{description}[/italic]")
+            self.console.print(f"\n[bold cyan]Current description:[/bold cyan] [italic]{description}[/italic]")
         self.console.print("\n[dim]Press Enter to keep current value[/dim]")
 
     def get_new_name(self, current_name: str) -> str:
@@ -605,19 +630,63 @@ class ConsoleView:
             f"New periodicity (current: {current_periodicity}): "
         ).lower().strip()
 
-    def get_new_description(self, current_description: str) -> str | None:
+    def get_new_status(self, current_status: bool) -> bool | None:
         """
-        Gets a new description during edit.
+        Gets a new status during edit.
 
         Args:
-            current_description: Current description
+            current_status: Current status (True=active, False=inactive)
 
         Returns:
-            New description or None if the user wants to keep current
+            New status or None if the user wants to keep current
         """
-        display_description = current_description if current_description else "(no description)"
+        from rich.table import Table
+
+        current_text = "Active" if current_status else "Inactive"
+
+        self.console.print(f"\n[bold cyan]Current status:[/bold cyan] {current_text}")
+        self.console.print("[dim]Choose new status (or press Enter to keep current):[/dim]\n")
+
+        # Create a status selection table
+        table = Table(
+            show_header=False,
+            show_edge=False,
+            padding=(0, 1),
+            box=None
+        )
+        table.add_column("Number", style="bold yellow", width=3)
+        table.add_column("Status")
+
+        table.add_row("1.", "[green]Active[/green] - Habit is tracked and visible")
+        table.add_row("2.", "[red]Inactive[/red] - Habit is archived/hidden")
+
+        self.console.print(table)
+
+        while True:
+            user_input = self.console.input("\nEnter choice (1-2, or Enter to keep current): ").strip()
+
+            if user_input == "":
+                return None  # Keep current
+            elif user_input == "1":
+                return True  # Active
+            elif user_input == "2":
+                return False  # Inactive
+            else:
+                self.console.print("[red]Invalid choice. Please enter 1, 2, or press Enter.[/red]")
+
+    def get_new_description(self, current_description: str) -> str | None:
+        """
+        Gets a new new_description during edit.
+
+        Args:
+            current_description: Current new_description
+
+        Returns:
+            New new_description or None if the user wants to keep current
+        """
+        display_description = current_description if current_description else "(no new_description)"
         user_input = self.console.input(
-            f"New description (current: {display_description}): "
+            f"New new_description (current: {display_description}): "
         ).strip()
 
         # Return None if the user pressed Enter (keep current)

@@ -40,7 +40,7 @@ class Habit:
             'periodicity': self.periodicity,
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None,
-            'description': self.description,
+            'new_description': self.description,
             'is_active': self.is_active
         }
 
@@ -53,7 +53,7 @@ class Habit:
             periodicity=data['periodicity'],
             created_at=datetime.fromisoformat(data['created_at']) if data.get('created_at') else None,
             updated_at=datetime.fromisoformat(data['updated_at']) if data.get('updated_at') else None,
-            description=data.get('description', ''),
+            description=data.get('new_description', ''),
             is_active=data.get('is_active', True)
         )
 
@@ -61,7 +61,7 @@ class Habit:
     def from_tuple(cls, data: tuple) -> 'Habit':
         """
         Create from a database tuple.
-        Expected format: (habit_id, name, periodicity, created_at, updated_at, description, is_active)
+        Expected format: (habit_id, name, periodicity, created_at, updated_at, new_description, is_active)
         """
         return cls(
             habit_id=data[0] if len(data) > 0 else None,

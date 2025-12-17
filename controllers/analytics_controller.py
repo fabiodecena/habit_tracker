@@ -40,7 +40,7 @@ class AnalyticsController:
 
             # Convert to tuples for display
             habit_tuples = [(h.name, h.periodicity) for h in habits]
-            self.view.show_habits_numbered_list(habit_tuples)
+            self.view.show_habits_numbered_list_with_status(habit_tuples)
 
             choice = self.view.get_number_choice(
                 "\nEnter the number of the habit to analyze (or 'q' to quit): "

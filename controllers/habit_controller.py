@@ -22,15 +22,15 @@ class HabitController:
         self.service = HabitService(db)
 
     def create_habit(self):
-        """Interactive habit creation with optional description."""
+        """Interactive habit creation with optional new_description."""
         self.view.show_header("✨ [bold cyan]Create a new habit[/bold cyan]")
 
         name = self.view.get_habit_name()
         periodicity = self.view.get_periodicity()
 
-        # Ask if the user wants to add a description
+        # Ask if the user wants to add a new_description
         add_description = self.view.get_confirmation(
-            "\nDo you want to add a description/comment for this habit?  (y/n): "
+            "\nDo you want to add a new_description/comment for this habit?  (y/n): "
         )
 
         description = ""
@@ -57,8 +57,8 @@ class HabitController:
                 return
 
             # Convert to tuples for display
-            habit_tuples = [(h.name, h.periodicity) for h in habits]
-            self.view.show_habits_numbered_list(habit_tuples)
+            habit_tuples = [(h.name, h.periodicity, h.is_active) for h in habits]
+            self.view.show_habits_numbered_list_with_status(habit_tuples)
 
             choice = self.view.get_number_choice(
                 "\nEnter the number of the habit to delete (or 'q' to quit): "
@@ -119,14 +119,14 @@ class HabitController:
         while True:
             self.view.show_header("✏️  [bold yellow]Edit a habit[/bold yellow]")
 
-            habits = self.service.get_all_habits()
+            habits = self.service.get_all_habits(include_inactive=True)
             if not habits:
                 self.view.show_no_habits_found()
                 return
 
             # Convert to tuples for display
-            habit_tuples = [(h.name, h.periodicity) for h in habits]
-            self.view.show_habits_numbered_list(habit_tuples)
+            habit_tuples = [(h.name, h.periodicity, h.is_active) for h in habits]
+            self.view.show_habits_numbered_list_with_status(habit_tuples)
 
             choice = self.view.get_number_choice(
                 "\nEnter the number of the habit to edit (or 'q' to quit): "
@@ -140,10 +140,11 @@ class HabitController:
                 if 1 <= choice_num <= len(habits):
                     selected_habit = habits[choice_num - 1]
 
-                    # Show current habit info including description
+
                     self.view.show_current_habit_info(
                         selected_habit.name,
                         selected_habit.periodicity,
+                        selected_habit.is_active,
                         selected_habit.description
                     )
 
@@ -151,6 +152,7 @@ class HabitController:
                     new_name = self.view.get_new_name(selected_habit.name)
                     new_periodicity = self.view.get_new_periodicity(selected_habit.periodicity)
                     new_description = self.view.get_new_description(selected_habit.description)
+                    new_status = self.view.get_new_status(selected_habit.is_active)
 
                     # Keep current values if the user pressed Enter
                     if not new_name:
@@ -159,17 +161,20 @@ class HabitController:
                         new_periodicity = selected_habit.periodicity
                     if new_description is None:  # User skipped
                         new_description = selected_habit.description
+                    if new_status is None:
+                        new_status = selected_habit.is_active
 
                     # Update habit
                     success, message = self.service.update_habit(
                         selected_habit.name,
                         new_name,
                         new_periodicity,
+                        new_status,
                         new_description
                     )
 
                     if success:
-                        self.view.show_habit_updated(selected_habit.name, new_name, new_periodicity)
+                        self.view.show_habit_updated(selected_habit.name, new_name, new_status, new_periodicity)
                     else:
                         self.view.show_error(message)
                     return
@@ -195,7 +200,7 @@ class HabitController:
         if include_inactive:
             self.view.show_all_habits_list(habit_tuples)
         else:
-            self.view.show_habits_list(habit_tuples)
+            self.view.show_active_habits_list(habit_tuples)
 
     def list_active_habits(self):
         """Display only active habits."""

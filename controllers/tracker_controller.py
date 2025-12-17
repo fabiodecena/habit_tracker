@@ -34,8 +34,8 @@ class TrackerController:
                 self.view.show_no_habits_found()
                 return
 
-            habit_tuples = [(h.name, h.periodicity) for h in habits]
-            self.view.show_habits_numbered_list(habit_tuples)
+            habit_tuples = [(h.name, h.periodicity, h.is_active) for h in habits]
+            self.view.show_habits_numbered_list_with_status(habit_tuples)
 
             choice = self.view.get_number_choice(
                 "\nEnter the number of the habit to check-off (or 'q' to quit): "

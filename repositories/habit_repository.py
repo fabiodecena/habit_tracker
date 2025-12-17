@@ -69,7 +69,7 @@ class HabitRepository:
             include_inactive: Whether to include inactive habits
 
         Returns:
-            List of Habit objects ordered by periodicity (daily first), then by creation date (newest first)
+            List of Habit objects ordered by periodicity (daily first), then by creation date (the newest first)
         """
         con = self.db or Database.get_connection()
         cur = con.cursor()
@@ -147,7 +147,7 @@ class HabitRepository:
             """
             SELECT habit_id, name, periodicity, created_at, updated_at, description, is_active
             FROM habits
-            WHERE name = ?  AND is_active = 1
+            WHERE name = ?  
             """,
             (name,)
         )
@@ -185,7 +185,7 @@ class HabitRepository:
                 """
                 SELECT habit_id, name, periodicity, created_at, updated_at, description, is_active
                 FROM habits
-                WHERE periodicity = ? AND is_active = 1
+                WHERE periodicity = ? 
                 ORDER BY created_at DESC
                 """,
                 (periodicity,)
@@ -214,15 +214,19 @@ class HabitRepository:
             cur.execute(
                 """
                 UPDATE habits
-                SET name = ?, periodicity = ?, updated_at = ?, description = ?, is_active = ?
+                SET name = ?, 
+                    periodicity = ?, 
+                    updated_at = ?, 
+                    is_active = ?,
+                    description = ? 
                 WHERE habit_id = ?
                 """,
                 (
                     habit.name,
                     habit.periodicity,
                     habit.updated_at.isoformat(),
-                    habit.description,
                     1 if habit.is_active else 0,
+                    habit.description,
                     habit.habit_id
                 )
             )

@@ -29,7 +29,7 @@ class HabitService:
         Args:
             name: Habit name
             periodicity: 'daily' or 'weekly'
-            description: Optional description/description
+            description: Optional new_description/new_description
 
         Returns:
             Tuple of (success:   bool, message: str)
@@ -60,7 +60,8 @@ class HabitService:
         old_name: str,
         new_name: str,
         new_periodicity: str,
-        description: str = None
+        new_status: bool = True,
+        new_description: str = None
     ) -> Tuple[bool, str]:
         """
         Updates an existing habit with validation.
@@ -69,7 +70,8 @@ class HabitService:
             old_name: Current habit name
             new_name: New habit name
             new_periodicity: New periodicity
-            description: Optional description to update
+            new_status: New habit status (active/inactive)
+            new_description: Optional description to update
 
         Returns:
             Tuple of (success: bool, message: str)
@@ -95,8 +97,10 @@ class HabitService:
         # Update the habit object
         old_habit.name = new_name.strip()
         old_habit.periodicity = new_periodicity
-        if description is not None:
-            old_habit.description = description
+        if new_description is not None:
+            old_habit.description = new_description.strip()
+        if new_status is not None:
+            old_habit.is_active = new_status
 
         success = self.repository.update(old_habit)
 

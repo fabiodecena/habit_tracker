@@ -31,9 +31,9 @@ def seed_predefined_data(db):
     end_date = datetime.now()
     start_date = end_date - timedelta(weeks=Config.SEED_WEEKS)
 
-    # Seed habits with description
+    # Seed habits with new_description
     for name, periodicity, description in Config. SEED_HABITS:
-        # Create habit with description
+        # Create habit with new_description
         success, message = habit_service.create_habit(name, periodicity, description)
 
         if not success:

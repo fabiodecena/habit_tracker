@@ -87,7 +87,7 @@ class CompletionController:
 
             # Show habits
             habit_tuples = [(h.name, h.periodicity) for h in habits]
-            self.view.show_habits_numbered_list(habit_tuples)
+            self.view.show_habits_numbered_list_with_status(habit_tuples)
 
             habit_choice = self.view.get_number_choice(
                 "\nEnter the number of the habit (or 'q' to quit): "
