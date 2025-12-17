@@ -29,34 +29,29 @@ class MenuController:
 
     def run(self):
         """Main menu loop."""
+        # Define menu actions mapping
+        menu_actions = {
+            '1': self.habit_controller.create_habit,
+            '2': self.habit_controller.delete_habit,
+            '3': self.tracker_controller.check_off_habit,
+            '4': self.habit_controller.edit_habit,
+            '5': self.habit_controller.list_active_habits,
+            '6': self.habit_controller.list_all_habits_including_inactive,
+            '7': self.habit_controller.list_habits_by_periodicity,
+            '8': self.analytics_controller.show_longest_streak_all,
+            '9': self.analytics_controller.show_longest_streak_specific,
+            '10': self.completion_controller.show_completion_table,
+            '11': self.completion_controller.edit_completion_notes,
+        }
+
         while True:
             self.view.show_menu()
             choice = self.view.get_menu_choice()
 
-            if choice == '1':
-                self.habit_controller.create_habit()
-            elif choice == '2':
-                self.habit_controller.delete_habit()
-            elif choice == '3':
-                self.tracker_controller.check_off_habit()
-            elif choice == '4':
-                self.habit_controller.edit_habit()
-            elif choice == '5':
-                self.habit_controller.list_active_habits()  # CHANGED
-            elif choice == '6':  # NEW
-                self.habit_controller.list_all_habits_including_inactive()
-            elif choice == '7':  # Changed from 6
-                self.habit_controller.list_habits_by_periodicity()
-            elif choice == '8':  # Changed from 7
-                self.analytics_controller.show_longest_streak_all()
-            elif choice == '9':  # Changed from 8
-                self.analytics_controller.show_longest_streak_specific()
-            elif choice == '10':  # Changed from 9
-                self.completion_controller.show_completion_table()
-            elif choice == '11':  # Changed from 10
-                self.completion_controller.edit_completion_notes()
-            elif choice == '12':  # Changed from 11
+            if choice == '12':  # Exit
                 self.view.show_goodbye()
                 break
+            elif choice in menu_actions:
+                menu_actions[choice]()  # Call the corresponding method
             else:
                 self.view.show_invalid_choice()

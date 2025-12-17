@@ -55,16 +55,16 @@ class ConsoleView:
     def get_menu_choice(self) -> str:
         """Gets user's menu choice."""
         return self.console.input(
-            "[bold yellow]Enter your choice (1-12): [/bold yellow]"  # Changed from 1-11
+            "\n[bold yellow]Enter your choice (1-12): [/bold yellow]"  # Changed from 1-11
         )
 
-    def get_habit_name(self, prompt: str = "Enter habit name: ") -> str:
+    def get_habit_name(self, prompt: str = "\nEnter habit name: ") -> str:
         """Gets a habit name from a user."""
         return self.console.input(prompt)
 
     def get_periodicity(
             self,
-            prompt: str = "Enter periodicity (daily/weekly): "
+            prompt: str = "\nEnter periodicity (daily/weekly): "
     ) -> str:
         """Gets periodicity from the user."""
         return self.console.input(prompt).lower()
@@ -114,8 +114,8 @@ class ConsoleView:
         from rich import box
 
         deletion_menu = """[yellow]1.[/yellow] [cyan]Soft Delete (Archive)[/cyan] - Hide habit but keep all data
-    [yellow]2.[/yellow] [red]Hard Delete (Permanent)[/red] - Delete habit and all completion history
-    [yellow]q.[/yellow] [dim]Cancel[/dim]"""
+[yellow]2.[/yellow] [red]Hard Delete (Permanent)[/red] - Delete habit and all completion history
+[yellow]q.[/yellow] [dim]Cancel[/dim]"""
 
         panel = Panel(
             deletion_menu,

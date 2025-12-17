@@ -44,13 +44,13 @@ def create_menu_table() -> Table:
         ("3.", "✅", "[gold1]Check-off a habit (Complete task)[/gold1]"),
         ("4.", "📝", "[gold1]Edit a habit[/gold1]"),
         ("5.", "📋", "[gold1]List all active habits[/gold1]"),
-        ("6.", "📚", "[gold1]List all habits (including inactive)[/gold1]"),  # NEW
+        ("6.", "📚", "[gold1]List all habits (including inactive)[/gold1]"),
         ("7.", "🔍", "[gold1]List habits by periodicity[/gold1]"),
         ("8.", "🏆", "[gold1]Show longest streak of all habits[/gold1]"),
         ("9.", "🎯", "[gold1]Show longest streak for a specific habit[/gold1]"),
         ("10.", "📊", "[gold1]View completion table and details[/gold1]"),
-        ("11.", "✍️", "[gold1]Edit completion notes[/gold1]"),
-        ("12.", "👋", "[red]Exit[/red]")  # Changed from 11 to 12
+        ("11.", "📝", "[gold1]Edit completion notes[/gold1]"),
+        ("12.", "👋", "[red]Exit[/red]")
     ]
 
     table = Table(
