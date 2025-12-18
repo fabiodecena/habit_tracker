@@ -631,35 +631,73 @@ tests/test_analytics_service.py::test_champion_habit PASSED
 
 ## Code Documentation
 
-All Python code includes comprehensive docstrings following PEP 257 conventions: 
+All Python code includes comprehensive docstring documentation following PEP 257 conventions. 
 
-```python
-def calculate_longest_streak(self, habit_name: str) -> int:
-    """
-    Calculate the longest streak for a specific habit.
-    
-    A streak is the number of consecutive periods where the habit
-    was completed without breaks.
-    
-    Args:
-        habit_name (str): The name of the habit
-    
-    Returns:
-        int:  Longest streak count, or None if habit not found
-        
-    Example:
-        >>> service. calculate_longest_streak("Read Journal")
-        28
-    """
-    # Implementation... 
+### Viewing HTML Documentation
+
+The project uses **pdoc** to generate HTML documentation from Python docstrings. 
+
+**Access the documentation:**
+
+**Option 1: Open in Browser**
+```bash
+# macOS
+open docs/html/index.html
+
+# Linux
+xdg-open docs/html/index.html
+
+# Windows
+start docs/html/index.html
 ```
 
-**Documentation includes:**
-- Function/method purpose
-- Parameter descriptions with types
-- Return value specifications
-- Usage examples
-- Edge case notes
+**Option 2: Direct File Path**
+Navigate to `docs/html/index.html` in your file explorer and open it with your browser.
+
+**Option 3: GitHub Repository**
+Browse the documentation directly on GitHub:  [docs/html/index.html](https://github.com/fabiodecena/habit_tracker/blob/master/docs/html/index.html)
+
+### Generating Documentation
+
+To regenerate the HTML documentation after making code changes:
+
+```bash
+# Install pdoc if not already installed
+pip install pdoc3
+
+# Generate HTML documentation
+pdoc --html --output-dir docs --force . 
+```
+
+**Command options explained:**
+- `--html`: Generate HTML output
+- `--output-dir docs`: Save documentation to the `docs/` folder
+- `--force`: Overwrite existing documentation
+- `.`: Document the current directory (entire project)
+
+**Generate docs for specific modules:**
+```bash
+# Document only models
+pdoc --html --output-dir docs --force models/
+
+# Document only services
+pdoc --html --output-dir docs --force services/
+
+# Document only controllers
+pdoc --html --output-dir docs --force controllers/
+```
+
+### Documentation Coverage
+
+The HTML documentation includes: 
+
+✅ All class definitions and methods  
+✅ Function signatures with type hints  
+✅ Parameter descriptions  
+✅ Return value specifications  
+✅ Usage examples  
+✅ Module-level documentation  
+✅ Interactive search functionality
 
 ## Development
 
