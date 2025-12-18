@@ -1,7 +1,7 @@
 """
 Habit Controller - Coordinates habit operations
 """
-from views.console_view import ConsoleView
+
 from services.habit_service import HabitService
 
 
@@ -10,7 +10,7 @@ class HabitController:
     Controller for habit-related operations.
     """
 
-    def __init__(self, view: ConsoleView, db=None):
+    def __init__(self, db, view):
         """
         Initialize the controller.
 
@@ -51,7 +51,7 @@ class HabitController:
         while True:
             self.view.show_header("🗑️  [bold red]Delete a habit[/bold red]")
 
-            habits = self.service.get_all_habits(include_inactive=False)
+            habits = self.service.get_all_habits(include_inactive=True)
             if not habits:
                 self.view.show_no_habits_found()
                 return

@@ -1,9 +1,8 @@
 """
 Completion Controller - Coordinates completion table operations
 """
-from views.console_view import ConsoleView
-from services.habit_service import HabitService
 from services.analytics_service import AnalyticsService
+from services.habit_service import HabitService
 
 
 class CompletionController:
@@ -11,7 +10,7 @@ class CompletionController:
     Controller for completion table operations.
     """
 
-    def __init__(self, view: ConsoleView, db=None):
+    def __init__(self, db, view):
         """
         Initialize the controller.
 
@@ -80,7 +79,7 @@ class CompletionController:
             self.view.show_header("✏️  [bold yellow]Edit Completion Notes[/bold yellow]")
 
             # Get all habits
-            habits = self.habit_service.get_all_habits()
+            habits = self.habit_service.get_all_habits(include_inactive=True)
             if not habits:
                 self.view.show_no_habits_found()
                 return

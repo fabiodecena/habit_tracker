@@ -312,7 +312,7 @@ python main.py
  7.  🏆  Show longest streak of all habits
  8.  🎯  Show longest streak for a specific habit
  9.  📊  View completion table
-10.  ✍️  Edit completion notes
+10.  📝  Edit completion notes
 11.  👋  Exit
 
 Enter your choice (1-11): _

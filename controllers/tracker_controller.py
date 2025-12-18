@@ -2,7 +2,6 @@
 Tracker Controller - Coordinates tracking operations
 """
 from datetime import datetime
-from views.console_view import ConsoleView
 from services.habit_service import HabitService
 from services.tracker_service import TrackerService
 
@@ -12,7 +11,7 @@ class TrackerController:
     Controller for tracking habit completions.
     """
 
-    def __init__(self, view: ConsoleView, db=None):
+    def __init__(self, db, view):
         """
         Initialize the controller.
 

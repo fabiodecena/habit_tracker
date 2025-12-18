@@ -1,19 +1,17 @@
 """
 Console View - Handles all console output and user input
 """
+from datetime import datetime
 from typing import List, Tuple
-
 from rich import box
-from rich.align import Align
 from rich.console import Console
-from rich.console import Group
 from rich.panel import Panel
-from rich.rule import Rule
-from rich.text import Text
+from rich.table import Table
 
 from views.formatters import (
     create_menu_table,
-    get_periodicity_icon
+    get_periodicity_icon, create_manage_habits_menu_table, create_track_progress_menu_table,
+    create_analytics_reports_menu_table
 )
 
 
@@ -28,34 +26,153 @@ class ConsoleView:
     # ============ Menu Display ============
 
     def show_menu(self):
-        """Displays the main menu."""
-        title = Text("✨ HABIT TRACKER ✨\n", style="bold magenta")
-        horizontal_line = Rule(style="bright_blue")
-        spacing = Text("")
+        """Displays the main menu with a box border"""
 
-        panel = Panel(
-            Group(
-                Align.center(title),
-                horizontal_line,
-                spacing,
-                create_menu_table()
-            ),
-            box=box.HORIZONTALS,
-            border_style="bright_blue",
-            padding=(1, 2),
-            title="[bold white]Main Menu[/bold white]",
-            title_align="center",
+        self.console.print()
+
+        # Create a header with a double box border
+        header = Panel(
+            "🎯 HABIT TRACKER - MAIN MENU",
+            style="bold cyan",
+            box=box.DOUBLE,
+            padding=(0, 2)
+        )
+        self.console.print(header)
+        self.console.print()
+
+        # Display menu options
+        menu_table = create_menu_table()
+        self.console.print(menu_table)
+        self.console.print()
+
+    def get_submenu_choice(self) -> str:
+        """Gets a user's submenu choice (generic for all submenus)"""
+        return self.console.input(
+            "[bold yellow]Enter your choice: [/bold yellow]"
+        )
+
+    def show_manage_habits_menu(self):
+        """Displays the Manage Habits submenu"""
+
+        self.console.print()
+
+        header = Panel(
+            "📝 MANAGE HABITS",
+            style="bold green",
+            box=box.DOUBLE,
+            padding=(0, 2)
+        )
+        self.console.print(header)
+        self.console.print()
+
+        menu_table = create_manage_habits_menu_table()
+        self.console.print(menu_table)
+        self.console.print()
+
+    def show_track_progress_menu(self):
+        """Displays the Track Progress submenu"""
+
+        self.console.print()
+
+        header = Panel(
+            "✅ TRACK PROGRESS",
+            style="bold blue",
+            box=box.DOUBLE,
+            padding=(0, 2)
+        )
+        self.console.print(header)
+        self.console.print()
+
+        menu_table = create_track_progress_menu_table()
+        self.console.print(menu_table)
+        self.console.print()
+
+    def show_analytics_reports_menu(self):
+        """Displays the Analytics & Reports submenu"""
+
+        self.console.print()
+
+        header = Panel(
+            "📊 ANALYTICS & REPORTS",
+            style="bold magenta",
+            box=box.DOUBLE,
+            padding=(0, 2)
+        )
+        self.console.print(header)
+        self.console.print()
+
+        menu_table = create_analytics_reports_menu_table()
+        self.console.print(menu_table)
+        self.console.print()
+
+    def show_completion_statistics(self, summary):
+        """
+        Display comprehensive completion statistics.
+
+        Args:
+            summary: List of dictionaries with habit statistics
+        """
+
+        self.show_header("📈 [bold cyan]Completion Statistics[/bold cyan]")
+
+        if not summary:
+            self.console.print("  No habits found.", style="dim")
+            return
+
+        table = Table(
+            show_header=True,
+            header_style="bold magenta",
+            box=box.ROUNDED,
+            padding=(0, 2),
             expand=False
         )
 
-        self.console.print("\n", panel)
+        table.add_column("", width=3, justify="center")
+        table.add_column("Habit Name", style="cyan bold", min_width=20, justify="center")
+        table.add_column("Type", style="yellow", width=10, justify="center")
+        table.add_column("Total", style="green", width=8, justify="center")
+        table.add_column("Current", style="blue", width=10, justify="center")
+        table.add_column("Longest", style="magenta", width=10, justify="center")
+        table.add_column("Last Done", style="white", width=12, justify="center")
+
+        for item in summary:
+            icon = get_periodicity_icon(item['periodicity'])
+            name = item['name']
+            periodicity = item['periodicity'].capitalize()
+            total = str(item.get('total_completions', 0))
+
+            # Format streaks
+            current_streak = item.get('current_streak', 0)
+            longest_streak = item.get('longest_streak', 0)
+            current_str = f"{current_streak} {'day' if item['periodicity'] == 'daily' else 'week'}{'s' if current_streak != 1 else ''}"
+            longest_str = f"{longest_streak} {'day' if item['periodicity'] == 'daily' else 'week'}{'s' if longest_streak != 1 else ''}"
+
+            # Format last completion
+            last_completion = item.get('last_completion')
+            if last_completion:
+                if isinstance(last_completion, str):
+                    last_completion = datetime.fromisoformat(last_completion)
+                days_ago = (datetime.now() - last_completion).days
+                if days_ago == 0:
+                    last_done = "Today"
+                elif days_ago == 1:
+                    last_done = "Yesterday"
+                else:
+                    last_done = f"{days_ago}d ago"
+            else:
+                last_done = "Never"
+
+            table.add_row(icon, name, periodicity, total, current_str, longest_str, last_done)
+
+        self.console.print(table)
+        self.console.print()
 
     # ============ User Input ============
 
     def get_menu_choice(self) -> str:
-        """Gets user's menu choice."""
+        """Gets a user's main menu choice"""
         return self.console.input(
-            "\n[bold yellow]Enter your choice (1-12): [/bold yellow]"  # Changed from 1-11
+            "[bold yellow]Enter your choice (1-4): [/bold yellow]"
         )
 
     def get_habit_name(self, prompt: str = "\nEnter habit name: ") -> str:
@@ -110,8 +227,6 @@ class ConsoleView:
         Returns:
             'soft', 'hard', or 'cancel'
         """
-        from rich.panel import Panel
-        from rich import box
 
         deletion_menu = """[yellow]1.[/yellow] [cyan]Soft Delete (Archive)[/cyan] - Hide habit but keep all data
 [yellow]2.[/yellow] [red]Hard Delete (Permanent)[/red] - Delete habit and all completion history
@@ -259,10 +374,6 @@ class ConsoleView:
         Args:
             habits: List of tuples (name, periodicity, comments, is_active)
         """
-        from rich.table import Table
-        from rich import box
-        from views.formatters import get_periodicity_icon
-
         self.show_header("📋 [bold blue]Currently tracked habits:[/bold blue]")
 
         # Add a blank line for spacing
@@ -307,9 +418,6 @@ class ConsoleView:
         Args:
             habits: List of tuples (name, periodicity, comments, is_active)
         """
-        from rich.table import Table
-        from rich import box
-        from views.formatters import get_periodicity_icon
 
         self.show_header("📚 [bold blue]All habits (including inactive):[/bold blue]")
 
@@ -445,7 +553,6 @@ class ConsoleView:
         """
         Displays the periodicity filter menu.
         """
-        from rich.table import Table
 
         table = Table(
             show_header=False,
@@ -458,7 +565,7 @@ class ConsoleView:
         table.add_column("Description", style="cyan")
 
         menu_items = [
-            ("1.", "☀️", "Daily habits"),
+            ("1.", "🕐", "Daily habits"),
             ("2.", "📆", "Weekly habits"),
         ]
 
@@ -475,8 +582,6 @@ class ConsoleView:
         Args:
             summary_data: List of habit summary dictionaries
         """
-        from rich.table import Table
-        from rich import box
 
         self.show_header("📊 [bold magenta]Habit Completion Summary[/bold magenta]")
         self.console.print()
@@ -536,10 +641,6 @@ class ConsoleView:
         Args:
             habit_data: Dictionary with habit details and completions
         """
-        from rich.table import Table
-        from rich.panel import Panel
-        from rich import box
-        from views.formatters import get_periodicity_icon
 
         icon = get_periodicity_icon(habit_data['periodicity'])
 
@@ -640,7 +741,6 @@ class ConsoleView:
         Returns:
             New status or None if the user wants to keep current
         """
-        from rich.table import Table
 
         current_text = "Active" if current_status else "Inactive"
 

@@ -11,10 +11,12 @@ from services.tracker_service import TrackerService
 from utils.seed_data import seed_predefined_data
 from views.console_view import ConsoleView
 
+
 @click.group(invoke_without_command=True)
 @click.pass_context
 def cli(ctx):
-    """✨ Habit Tracker CLI - Build better habits!   ✨"""
+    """✨ Habit Tracker CLI - Build better habits!  ✨"""
+    # Initialize database and seed data
     db = Database. get_connection()
     seed_predefined_data(db)
 
@@ -22,12 +24,24 @@ def cli(ctx):
     ctx.ensure_object(dict)
     ctx.obj['db'] = db
 
-    # If no subcommand is provided, show the interactive menu
+    # If no subcommand is provided, launch the interactive menu
     if ctx.invoked_subcommand is None:
-        menu = MenuController(db)
-        menu.run()
+        controller = MenuController(db)
+        controller.run()
 
-# ============ Direct CLI Commands ============
+
+# ============ Menu Command ============
+
+@cli.command()
+@click.pass_context
+def menu(ctx):
+    """🎯 Launch interactive menu"""
+    db = ctx.obj['db']
+    controller = MenuController(db)
+    controller.run()
+
+
+# ============ Direct CLI Commands (Quick Actions) ============
 
 @cli.command()
 @click.argument('name')
@@ -49,6 +63,7 @@ def create(ctx, name, periodicity, description):
     else:
         view.show_error(message)
 
+
 @cli.command()
 @click.argument('name')
 @click.option('--hard', is_flag=True, help='Permanently delete (default is soft delete)')
@@ -63,33 +78,34 @@ def delete(ctx, name, hard):
 
     if hard:
         confirm = view.get_confirmation(
-            f"⚠️  PERMANENTLY delete '{name}' and all its data? This cannot be undone! (y/n): "
+            f"⚠️  PERMANENTLY delete '{name}' and all its data?  This cannot be undone!  (y/n): "
         )
     else:
-        confirm = view.get_confirmation(
+        confirm = view. get_confirmation(
             f"⚠️  Archive '{name}'? (You can restore it later) (y/n): "
         )
 
-    if confirm.lower() != 'y':
-        view.console.print("❌ Deletion cancelled.", style="yellow")
+    if confirm. lower() != 'y':
+        view. console.print("❌ Deletion cancelled.", style="yellow")
         return
 
     success, message = service.delete_habit(name, soft_delete=soft_delete)
 
     if success:
         if soft_delete:
-            view.show_habit_archived(name)
+            view. show_habit_archived(name)
         else:
             view.show_habit_deleted(name)
     else:
         view.show_error(message)
 
+
 @cli.command()
 @click.argument('name')
-@click.option('--notes', default='', help='Optional notes for this check-off')
+@click.option('--notes', default='', help='Optional notes about completion')
 @click.pass_context
 def checkoff(ctx, name, notes):
-    """✅ Check-off a habit (mark as complete)"""
+    """✅ Check off a habit"""
     db = ctx.obj['db']
     view = ConsoleView()
     service = TrackerService(db)
@@ -98,41 +114,8 @@ def checkoff(ctx, name, notes):
 
     if success:
         view. show_habit_checked_off(name)
-    else:
-        view.show_error(message)
-
-@cli.command()
-@click.argument('old_name')
-@click.option('--new-name', help='New name for the habit')
-@click.option('--periodicity', type=click.Choice(['daily', 'weekly']), help='New periodicity')
-@click.option('--description', help='Description about the habit')
-@click.pass_context
-def edit(ctx, old_name, new_name, periodicity, status, description):
-    """✏️ Edit a habit's name, periodicity or description"""
-    db = ctx.obj['db']
-    view = ConsoleView()
-    habit_service = HabitService(db)
-
-    # Get existing habit
-    habit = habit_service.get_habit_by_name(old_name)
-    if not habit:
-        view.show_habit_not_found(old_name)
-        return
-
-    # Use existing values if not provided
-    final_name = new_name if new_name else old_name
-    final_periodicity = periodicity if periodicity else habit.periodicity
-    final_status = status if status is not None else habit.is_active
-    final_description = description if description is not None else habit.description
-
-    # Update description on the habit object
-    if description is not None:
-        habit.description = final_description
-
-    success, message = habit_service.update_habit(old_name, final_name, final_periodicity, final_status)
-
-    if success:
-        view.show_habit_updated(old_name, final_name, final_periodicity, final_status)
+        if notes:
+            view.console.print(f"   📝 Notes: [italic]{notes}[/italic]", style="dim cyan")
     else:
         view.show_error(message)
 
@@ -156,28 +139,63 @@ def habit_list(ctx, show_all):
 
 
 @cli.command()
-@click.argument('periodicity', type=click.Choice(['daily', 'weekly']))
+@click.argument('name')
+@click.option('--new-name', default=None, help='New habit name')
+@click.option('--periodicity', type=click.Choice(['daily', 'weekly']), default=None, help='New periodicity')
+@click.option('--description', default=None, help='New description')
+@click.option('--activate', 'status', flag_value=True, help='Set habit as active')
+@click.option('--deactivate', 'status', flag_value=False, help='Set habit as inactive')
 @click.pass_context
-def habits_filter(ctx, periodicity):
-    """🔍 List habits by periodicity"""
+def edit(ctx, name, new_name, periodicity, description, status):
+    """📝 Edit a habit"""
     db = ctx.obj['db']
     view = ConsoleView()
     service = HabitService(db)
 
-    habits = service.get_habits_by_periodicity(periodicity)
-    habit_tuples = [(h. name, h.periodicity) for h in habits]
-    view. show_filtered_habits(periodicity, habit_tuples)
+    # Get current habit
+    habit = service.get_habit_by_name(name)
+    if not habit:
+        view. show_error(f"Habit '{name}' not found")
+        return
+
+    # Use current values if not specified
+    final_name = new_name if new_name else habit.name
+    final_periodicity = periodicity if periodicity else habit.periodicity
+    final_description = description if description is not None else habit.description
+    final_status = status if status is not None else habit.is_active
+
+    success, message = service.update_habit(
+        name,
+        final_name,
+        final_periodicity,
+        final_description,
+        final_status
+    )
+
+    if success:
+        view. show_habit_updated(name, final_name, final_periodicity, final_status)
+    else:
+        view.show_error(message)
+
 
 @cli.command()
 @click.pass_context
 def champion(ctx):
-    """🏆 Show the habit with the longest habit_streak"""
+    """🏆 Show the habit with the longest streak"""
     db = ctx. obj['db']
     view = ConsoleView()
     service = AnalyticsService(db)
 
     habit_name, habit_streak = service.get_longest_streak_all_habits()
-    view.show_longest_streak_all(habit_name, habit_streak)
+
+    if habit_name:
+        view.console.print()
+        view.console.print(f"🏆 [bold gold1]Champion Habit:[/bold gold1] [cyan]{habit_name}[/cyan]")
+        view.console. print(f"   [yellow]Longest streak:[/yellow] [green bold]{habit_streak}[/green bold] days")
+        view.console.print()
+    else:
+        view.show_error("No habits found")
+
 
 @cli.command()
 @click.argument('name')
@@ -186,15 +204,17 @@ def streak(ctx, name):
     """🎯 Show the longest streak for a specific habit"""
     db = ctx. obj['db']
     view = ConsoleView()
-    habit_service = HabitService(db)
-    analytics_service = AnalyticsService(db)
+    service = AnalyticsService(db)
 
-    habit = habit_service.get_habit_by_name(name)
-    if habit:
-        streak_count = analytics_service.calculate_longest_streak(name)
-        view.show_longest_streak_specific(name, streak_count)
+    longest_streak = service.calculate_longest_streak(name)
+
+    if longest_streak is not None:
+        view.console. print()
+        view.console. print(f"🎯 [bold cyan]Habit:[/bold cyan] {name}")
+        view.console. print(f"   [yellow]Longest streak:[/yellow] [green bold]{longest_streak}[/green bold] days")
+        view.console.print()
     else:
-        view.show_habit_not_found(name)
+        view.show_error(f"Habit '{name}' not found")
 
 
 if __name__ == '__main__':

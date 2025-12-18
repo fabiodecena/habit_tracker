@@ -1,7 +1,7 @@
 """
 Analytics Controller - Coordinates analytics operations
 """
-from views.console_view import ConsoleView
+
 from services.habit_service import HabitService
 from services.analytics_service import AnalyticsService
 
@@ -11,7 +11,7 @@ class AnalyticsController:
     Controller for analytics operations.
     """
 
-    def __init__(self, view: ConsoleView, db=None):
+    def __init__(self, db, view):
         """
         Initialize the controller.
 
