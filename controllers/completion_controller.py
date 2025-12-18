@@ -86,7 +86,7 @@ class CompletionController:
                 return
 
             # Show habits
-            habit_tuples = [(h.name, h.periodicity) for h in habits]
+            habit_tuples = [(h.name, h.periodicity, h.is_active) for h in habits]
             self.view.show_habits_numbered_list_with_status(habit_tuples)
 
             habit_choice = self.view.get_number_choice(
