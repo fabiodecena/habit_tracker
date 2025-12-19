@@ -133,7 +133,6 @@ class ConsoleView:
         table.add_column("Current", style="blue", width=10, justify="center")
         table.add_column("Longest", style="magenta", width=10, justify="center")
         table.add_column("Total", style="green", width=8, justify="center")
-        table.add_column("Success", width=10, justify="right")
         table.add_column("Last Done", style="white", width=12, justify="center")
 
         for item in summary:
