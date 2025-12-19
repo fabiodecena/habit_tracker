@@ -1,7 +1,6 @@
 """
 Analytics & Reports submenu controller
 """
-from controllers import habit_controller
 from database import Database
 from services import AnalyticsService
 

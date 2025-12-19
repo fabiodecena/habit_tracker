@@ -1,9 +1,6 @@
 """
 Track Progress submenu controller
 """
-from database import Database
-from services import HabitService, AnalyticsService
-
 
 class TrackProgressController:
     """Handles progress tracking submenu navigation"""

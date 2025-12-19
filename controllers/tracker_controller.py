@@ -5,7 +5,6 @@ from datetime import datetime
 from services.habit_service import HabitService
 from services.tracker_service import TrackerService
 
-
 class TrackerController:
     """
     Controller for tracking habit completions.
