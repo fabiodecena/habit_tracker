@@ -41,7 +41,8 @@ class MenuController:
         )
         self.analytics_reports_controller = AnalyticsReportsController(
             self.view,
-            self.analytics_controller
+            self.analytics_controller,
+            self.habit_controller
         )
 
     def run(self):

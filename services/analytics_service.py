@@ -157,12 +157,12 @@ class AnalyticsService:
 
     def get_completion_summary(self) -> List[dict]:
         """
-        Get a completion summary for all active habits.
+        Get a completion summary for all habits.
 
         Returns:
             List of dictionaries with habit summary data
         """
-        habits = self.habit_repo.find_all(include_inactive=False)
+        habits = self.habit_repo.find_all(include_inactive=True)
         summary_data = []
 
         for habit in habits:
@@ -175,17 +175,18 @@ class AnalyticsService:
             # Calculate current streak
             current_streak = self.get_current_streak(habit.name)
 
-            # Get latest notes (from most recent completion)
-            latest_notes = events[-1].notes if events else ""
+            # Calculate longest streak
+            longest_streak = self.calculate_longest_streak(habit.name)
 
             summary_data.append({
                 'habit_id': habit.habit_id,
+                'is_active': habit.is_active,
                 'name': habit.name,
                 'periodicity': habit.periodicity,
                 'created_at': habit.created_at,
-                'notes': latest_notes,
                 'last_completion': last_completion,
                 'current_streak': current_streak,
+                'longest_streak': longest_streak,
                 'total_completions': len(events)
             })
 

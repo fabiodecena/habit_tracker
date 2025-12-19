@@ -1,36 +1,42 @@
 """
 Analytics & Reports submenu controller
 """
+from controllers import habit_controller
 from database import Database
 from services import AnalyticsService
 
 class AnalyticsReportsController:
     """Handles analytics and reports submenu navigation"""
 
-    def __init__(self, view, analytics_controller):
+    def __init__(self, view, analytics_controller, habit_controller):
         """
         Initialize analytics reports controller.
 
         Args:
             view: ConsoleView instance
             analytics_controller: AnalyticsController instance
+            habit_controller: HabitController instance
         """
         self.view = view
-        self. analytics_controller = analytics_controller
+        self.analytics_controller = analytics_controller
+        self.habit_controller = habit_controller
 
     def run(self):
         """Analytics & reports submenu loop"""
         actions = {
-            '1': self.analytics_controller.show_longest_streak_all,
-            '2': self.analytics_controller.show_longest_streak_specific,
-            '3': self._show_completion_statistics,
+            '1': self.habit_controller.list_active_habits,
+            '2': self.habit_controller.list_all_habits_including_inactive,
+            '3': self.habit_controller.list_habits_by_periodicity,
+            '4': self.analytics_controller.show_longest_streak_all,
+            '5': self.analytics_controller.show_longest_streak_specific,
+            '6': self._show_completion_statistics,
         }
 
         while True:
             self.view.show_analytics_reports_menu()
             choice = self.view.get_submenu_choice().lower()
 
-            if choice == '4':
+            if choice == '7':
                 break  # Back to the main menu
 
             action = actions.get(choice)

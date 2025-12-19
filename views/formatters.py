@@ -40,10 +40,7 @@ def create_manage_habits_menu_table() -> Table:
         ("1.", "➕", "[gold1]Create a new habit[/gold1]"),
         ("2.", "📝", "[gold1]Edit a habit[/gold1]"),
         ("3.", "❌", "[gold1]Delete a habit[/gold1]"),
-        ("4.", "📋", "[gold1]List all active habits[/gold1]"),
-        ("5.", "📚", "[gold1]List all habits (including inactive)[/gold1]"),
-        ("6.", "🔍", "[gold1]List habits by periodicity[/gold1]"),
-        ("7.", "↩️", "[dim]Back to main menu[/dim]")
+        ("4.", "↩️", "[dim]Back to main menu[/dim]")
     ]
 
     table = Table(
@@ -67,9 +64,8 @@ def create_track_progress_menu_table() -> Table:
     menu_items = [
         ("1.", "✅", "[gold1]Check-off a habit (mark as complete)[/gold1]"),
         ("2.", "📊", "[gold1]View completion table (summary)[/gold1]"),
-        ("3.", "📈", "[gold1]View detailed habit history[/gold1]"),
-        ("4.", "📝", "[gold1]Edit completion notes[/gold1]"),
-        ("5.", "↩️", "[dim]Back to main menu[/dim]")
+        ("3.", "📝", "[gold1]Edit completion notes[/gold1]"),
+        ("4.", "↩️", "[dim]Back to main menu[/dim]")
     ]
 
     table = Table(
@@ -91,10 +87,13 @@ def create_track_progress_menu_table() -> Table:
 def create_analytics_reports_menu_table() -> Table:
     """Creates the Analytics & Reports submenu table"""
     menu_items = [
-        ("1.", "🏆", "[gold1]Show longest streak of all habits[/gold1]"),
-        ("2.", "🎯", "[gold1]Show longest streak for specific habit[/gold1]"),
-        ("3.", "📈", "[gold1]Show completion statistics[/gold1]"),
-        ("4.", "↩️", "[dim]Back to main menu[/dim]")
+        ("1.", "📋", "[gold1]List all active habits[/gold1]"),
+        ("2.", "📚", "[gold1]List all habits (including inactive)[/gold1]"),
+        ("3.", "🔍", "[gold1]List habits by periodicity[/gold1]"),
+        ("4.", "🏆", "[gold1]Show longest streak of all habits[/gold1]"),
+        ("5.", "🎯", "[gold1]Show longest streak for specific habit[/gold1]"),
+        ("6.", "📈", "[gold1]Show completion statistics[/gold1]"),
+        ("7.", "↩️", "[dim]Back to main menu[/dim]")
     ]
 
     table = Table(

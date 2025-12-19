@@ -128,7 +128,7 @@ class ConsoleView:
         )
 
         table.add_column("", width=3, justify="center")
-        table.add_column("Habit Name", style="cyan bold", min_width=20, justify="center")
+        table.add_column("Habit Name", style="cyan bold", min_width=20, justify="left")
         table.add_column("Type", style="yellow", width=10, justify="center")
         table.add_column("Total", style="green", width=8, justify="center")
         table.add_column("Current", style="blue", width=10, justify="center")
@@ -137,7 +137,8 @@ class ConsoleView:
 
         for item in summary:
             icon = get_periodicity_icon(item['periodicity'])
-            name = item['name']
+            status_dot = "[green]●[/green]" if item.get('is_active', True) else "[red]○[/red]"
+            name = f"{status_dot} {item['name']}"
             periodicity = item['periodicity'].capitalize()
             total = str(item.get('total_completions', 0))
 

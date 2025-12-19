@@ -22,17 +22,14 @@ class ManageHabitsController:
         actions = {
             '1': self.habit_controller.create_habit,
             '2': self.habit_controller.edit_habit,
-            '3': self.habit_controller.delete_habit,
-            '4': self.habit_controller.list_active_habits,
-            '5': self.habit_controller.list_all_habits_including_inactive,
-            '6': self.habit_controller.list_habits_by_periodicity,
+            '3': self.habit_controller.delete_habit
         }
 
         while True:
             self.view.show_manage_habits_menu()
             choice = self.view.get_submenu_choice()
 
-            if choice == '7':
+            if choice == '4':
                 break  # Back to the main menu
 
             action = actions.get(choice)
