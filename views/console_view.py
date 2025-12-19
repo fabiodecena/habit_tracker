@@ -130,9 +130,9 @@ class ConsoleView:
         table.add_column("", width=3, justify="center")
         table.add_column("Habit Name", style="cyan bold", min_width=20, justify="left")
         table.add_column("Type", style="yellow", width=10, justify="center")
-        table.add_column("Total", style="green", width=8, justify="center")
         table.add_column("Current", style="blue", width=10, justify="center")
         table.add_column("Longest", style="magenta", width=10, justify="center")
+        table.add_column("Total", style="green", width=8, justify="center")
         table.add_column("Last Done", style="white", width=12, justify="center")
 
         for item in summary:
@@ -163,7 +163,7 @@ class ConsoleView:
             else:
                 last_done = "Never"
 
-            table.add_row(icon, name, periodicity, total, current_str, longest_str, last_done)
+            table.add_row(icon, name, periodicity, current_str, longest_str, total, last_done)
 
         self.console.print(table)
         self.console.print()
