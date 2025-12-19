@@ -608,6 +608,8 @@ class ConsoleView:
         table.add_column("Total", style="blue", width=5, justify="right")
 
         for idx, habit_data in enumerate(summary_data, 1):
+            status_dot = "[green]●[/green]" if habit_data.get('is_active', True) else "[red]○[/red]"
+            name = f"{status_dot} {habit_data['name']}"
             created_date = habit_data['created_at'].strftime('%Y-%m-%d')
 
             last_done = (
@@ -624,7 +626,7 @@ class ConsoleView:
 
             table.add_row(
                 str(idx),
-                habit_data['name'],
+                name,
                 periodicity_display,
                 created_date,
                 last_done,
