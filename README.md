@@ -586,43 +586,28 @@ CREATE TABLE IF NOT EXISTS tracker (
 
 ## Testing
 
-The application includes a comprehensive unit test suite using `pytest`.
+The application includes a comprehensive unit test suite using Python's built-in `unittest` framework.
 
 ### Running Tests
 
 **Run all tests:**
 ```bash
-pytest
-```
-
-**Run with verbose output:**
-```bash
-pytest -v
-```
-
-**Run with coverage report:**
-```bash
-pytest --cov=. 
-```
-
-**Run specific test file:**
-```bash
-pytest tests/test_habit_service.py -v
+python -m unittest
 ```
 
 ### Test Coverage
 
-The test suite covers: 
+The test suite covers:
 
 ✅ Habit creation and initialization  
+✅ Habit editing and deletion (soft delete / hard delete)  
 ✅ Task completion functionality  
-✅ Streak calculation logic  
+✅ Streak calculation logic (daily and weekly)  
 ✅ Habit breaking detection  
-✅ All analytics functions  
-✅ Database operations  
+✅ Analytics functions (longest streak, current streak, completion summary, completion history)  
+✅ Database operations using an in-memory SQLite database  
 ✅ Edge cases and error handling  
-✅ Soft delete (archive) functionality  
-✅ Habit restoration  
+✅ Habit restoration (reactivation)  
 
 ### Example Test Output
 
@@ -721,7 +706,7 @@ The HTML documentation includes:
 
 5. **Run tests** to ensure nothing breaks: 
    ```bash
-   pytest
+   python -m unittest
    ```
 
 6. **Commit and push:**
