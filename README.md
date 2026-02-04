@@ -596,6 +596,8 @@ python -m unittest
 ```
 ### Examples of Test Results
 
+Given that the function names are descriptive, I've included screenshots illustrating the functionalities tested.
+
 ![Screenshot 2026-02-04 151341.png](docs/screenshots/screenshot_151341.png)
 
 ![screenshot_151341.png](docs/screenshots/screenshot_151341.png)
