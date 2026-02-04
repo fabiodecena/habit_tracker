@@ -594,6 +594,13 @@ The application includes a comprehensive unit test suite using Python's built-in
 ```bash
 python -m unittest
 ```
+### Examples of Test Results
+
+![Screenshot 2026-02-04 151341.png](docs/screenshots/screenshot_151341.png)
+
+![screenshot_151341.png](docs/screenshots/screenshot_151341.png)
+
+![screenshot_152444.png](docs/screenshots/screenshot_152444.png)
 
 ### Test Coverage
 
