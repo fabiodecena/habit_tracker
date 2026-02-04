@@ -598,9 +598,10 @@ python -m unittest
 
 Given that the function names are descriptive, I've included screenshots illustrating the functionalities tested.
 
-![Screenshot 2026-02-04 151341.png](docs/screenshots/screenshot_151341.png)
 
 ![screenshot_151341.png](docs/screenshots/screenshot_151341.png)
+
+![screenshot_152109.png](docs/screenshots/screenshot_152109.png)
 
 ![screenshot_152444.png](docs/screenshots/screenshot_152444.png)
 
